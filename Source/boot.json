@@ -1,0 +1,89 @@
+{
+    "name": "露出拓展-请别露出惊讶的表情好吗",
+    "nickName": "请别露出惊讶的表情好吗 - 露出拓展",
+    "version": "1.0.0",
+    "styleFileList": [
+        "style/mee_css.css"
+    ],
+    "scriptFileList": [
+        "js/mee_js.js"
+    ],
+    "tweeFileList": [
+        "twee/mee_story.twee",
+        "twee/mee_settings.twee"
+    ],
+    "imgFileList": [
+        "img/misc/icon/lick.png",
+        "img/misc/icon/smell.png",
+        "img/misc/icon/toilet-stall.png",
+        "img/misc/icon/toilet-urinal.png",
+        "img/ui/mee-tip.png",
+        "img/ui/sym-exhibitionism.png"
+    ],
+    "additionDir": [],
+    "additionFile": [],
+    "addonPlugin": [
+        {
+            "modName": "TweeReplacer",
+            "addonName": "TweeReplacerAddon",
+            "modVersion": "^1.2.0",
+            "params": [
+                {
+                    "tip": "设置",
+                    "passage": "overlayReplace",
+                    "findRegex": "<<optionsinformation>><<\\/replace>>[\\s\\S]*?<<\\/button>>",
+                    "regexFlag": "g",
+                    "replace": "<<optionsinformation>><</replace>>\n\t\t<</button>><<dolmeemodTab>>"
+                },
+                {
+                    "tip": "随处脱衣",
+                    "passage": "StoryCaption",
+                    "findString": "<<clothingCaptionText>>",
+                    "replace": "<<clothingCaptionText>><<clothingCaptionButton>>"
+                },
+                {
+                    "tip": "随处脱衣",
+                    "passage": "Clothing Shop v2 Widgets",
+                    "findString": "<<clothingCaptionText>>",
+                    "replace": "<<clothingCaptionText>><<clothingCaptionButton>>"
+                },
+                {
+                    "tip": "购物中心厕所",
+                    "passage": "Shopping Centre",
+                    "findString": "\t\t\t<br>\n\t\t\t<<stairsicon \"up\">><<link [[",
+                    "replaceFile": "twee/replacer/购物中心厕所.twee",
+                    "all": true
+                },
+                {
+                    "tip": "购物中心厕所 代替原版Restroom",
+                    "passage": "Shopping Centre",
+                    "findString": "|Shopping Centre Restroom]]",
+                    "replace": "|Shopping Centre Escape Toilets]]",
+                    "all": true
+                }
+            ]
+        },
+        {
+            "modName": "BeautySelectorAddon",
+            "addonName": "BeautySelectorAddon",
+            "modVersion": "^2.0.0",
+            "params": {
+                "type": "(请确保启用此图像包) 请别露出惊讶的表情好吗 - 露出拓展"
+            }
+        }
+    ],
+    "dependenceInfo": [
+        {
+            "modName": "GameVersion",
+            "version": ">=0.5.10.12"
+        },
+        {
+            "modName": "TweeReplacer",
+            "version": "^1.2.0"
+        },
+        {
+            "modName": "BeautySelectorAddon",
+            "version": "^2.0.0"
+        }
+    ]
+}

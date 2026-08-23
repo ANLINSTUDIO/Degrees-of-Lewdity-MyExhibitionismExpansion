@@ -1,0 +1,6 @@
+			<br>
+			<<icon "men-toilet.png">><<link [[男厕所 (0:01)|Shopping Centre Mens Toilets]]>><<pass 1>><</link>><<if $player.gender_appearance is "f">><<exhibitionist 3>><</if>>
+			<br>
+			<<icon "women-toilet.png">><<link [[女厕所 (0:01)|Shopping Centre Womens Toilets]]>><<pass 1>><</link>><<if $player.gender_appearance is "m">><<exhibitionist 3>><</if>>
+			<br>
+			<<stairsicon "up">><<link [[

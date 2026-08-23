@@ -1,0 +1,118 @@
+/* ====================================== */
+/*                随处脱衣                */
+/* ====================================== */
+.clothing-caption-button-container {
+    display: grid;
+    width: 260px;
+    overflow: visible;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    margin-top: 10px;
+}
+.clothing-caption-button {
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--700);
+    background-color: var(--850);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+.clothing-caption-button.outfit {
+    background: linear-gradient(to bottom right, #fff, #fff0 20%);
+}
+.clothing-caption-button:hover {
+    border: 1px solid var(--150);
+    background-color: var(--750);
+    color: var(--gold);
+}
+.clothing-caption-button:active {
+    border: 1px solid var(--yellow);
+    background-color: var(--700);
+}
+.clothing-caption-button > * {
+    pointer-events: none;
+    user-select: none
+}
+.clothing-caption-button > div {
+    font-size: 7px;
+    white-space: nowrap;
+}
+.clothing-caption-button-container-disable {display: none;}
+.clothing-caption-button-container:has(.disabled) > .clothing-caption-button{
+    opacity: 0.5;
+    pointer-events: none;
+}
+.clothing-caption-button-container-nearby {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: 0.3s;
+    overflow: hidden;
+    box-shadow: 0px 0px 0px 0px var(--750);
+}
+.clothing-caption-button-container-nearby.start {
+    grid-template-rows: 0fr;
+    box-shadow: 0px 5px 10px 0px var(--750);
+}
+.clothing-caption-button-container-nearby > div {
+    min-height: 0;
+}
+#mee-add-safe-area-for-clothes-button {
+    font-size: smaller;
+}
+
+
+/* ====================================== */
+/*                  设置                  */
+/* ====================================== */
+
+/* 标签和标题 */
+.mee-settings-title > span {
+    position: relative;
+    z-index: 1;
+}
+.mee-settings-title > img {
+    position: absolute;
+    left: -2%;
+    height: 120%;
+    top: -10%;
+    opacity: 0.5;
+}
+.mee-settings-panel h3 {
+    text-shadow: 
+        -1px -1px 6px pink, 1px -1px 6px pink, -1px 1px 6px pink, 1px 1px 0 pink;
+    color: white !important;
+    letter-spacing: 2px;
+}
+.mee-settings-tipimg {
+    display: none;
+    background-color: #9e0000;
+    border-radius: 10px;
+    padding: 10px;
+}
+.mee-settings-tipimg > b {
+    color: gold;
+}
+
+/* 随处脱衣 */
+/* 取回衣物 */
+.clothing-takeback-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 30px;
+}
+.clothing-takeback-title > button {
+    font-size: small;
+    width: max-content;
+    height: 30px;
+}
+.clothing-takeback-button-container {
+    display: grid;
+    overflow: visible;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+}
+
+/* 敬请期待 */
+.settingsText {
+    text-align: start;
+}

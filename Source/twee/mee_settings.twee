@@ -1,0 +1,152 @@
+:: Setting MoreExhibitionEvents [widget]
+<<widget "dolmeemodTab">>
+	<<button "<div class='mee-settings-title'><img src='img/ui/sym-exhibitionism.png'><span>请别<b>露出</b>惊讶的表情好吗</span></div>">>
+		<<toggleTab>>
+		<<replace #customOverlayContent>><<meemodsetting>><</replace>>
+	<</button>>
+<</widget>>
+
+<<widget "meemodsettingtackback">>
+	<div id="clothing-takeback-button-temp" style="display: none"><<wardrobeLinks>></div><<run setTimeout(()=>{$("#clothing-takeback-button-temp").remove()})>>
+	<<if $wardrobesground and Object.keys($wardrobesground).length > 0>>
+		<<for _wardrobesground_k range Object.keys($wardrobesground)>>
+			<<set _wardrobesground to mee.getGroundClothes(_wardrobesground_k)>>
+			<<run console.log(_wardrobesground)>>
+			<<if _wardrobesground>>
+				<div class="settingsToggleItem">
+					<div class="clothing-takeback-title">
+						_wardrobesground_k
+						<<if $safeAreaForClothes.includes(_wardrobesground_k)>>
+							<<capture _wardrobesground_k>>
+								<<button "取回并失效">><<run mee.takeBackClothesAll(_wardrobesground_k)>><</button>>
+							<</capture>>
+						<<else>>
+							<div/>
+						<</if>>
+					</div>
+					<div class="clothing-takeback-button-container">
+						<<for _clothes_object range _wardrobesground>>
+							<<set _worn_index to _clothes_object.index>>
+							<<set _worn_k to _clothes_object.type>>
+							<<set _worn to _clothes_object.clothes>>
+							<div class="clothing-caption-button" @onclick="'mee.takeBackClothes(`'+_wardrobesground_k+'`, `'+_worn_k+'`, `'+_worn_index+'`)'">
+								<<clothingicon _worn _worn_k>>
+								<<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
+								<div>_label</div>
+							</div>
+						<</for>>
+					</div>
+				</div>
+			<</if>>
+		<</for>>
+	<<else>>
+		<div class="settingsToggleItemWide">
+			还没有额外设置的可以存放衣服的地方
+		</div>
+	<</if>>
+<</widget>>
+
+<<widget "meemodsetting">>
+	<<setupOptions>>
+	<div class="p-2 text-align-center mee-settings-panel">
+
+		<!-- 未启用图包警告 -->
+		<div class="mee-settings-tipimg">
+			<img src='img/ui/mee-tip.png' onerror="javascript:this.parentElement.style.display='block'">
+			请前往 [Mod管理器] > [Mod Config] > [BeautySelectorAddon 启用及排序管理], 将本模组提供的图像包启用, <b>否则将会大幅降低本模组体验！</b>
+			启用后<b>无需重新载入</b>，重新打开此选项页面即可。
+		</div>
+
+		<!-- 模组标题与信息 -->
+		<h3>请别露出惊讶的表情好吗 - 露出拓展 <<print window.modSC2DataManager?.getModLoader()?.getModZip("露出拓展-请别露出惊讶的表情好吗")?.modInfo?.version ?? "未知版本">></h3>
+		<div class="m-2">
+			<b class="gold">Needmeet 遇欲</b> 呈现
+		</div>
+
+		<!-- 随处脱衣 -->
+		<div class="settingsGrid">
+			<div class="settingsHeader options">随处脱衣</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">取回衣物</span><br>
+				<small>衣物将归还至主衣柜。</small>
+				<div id="meemodsettingtackback" class="settingsGrid"><<meemodsettingtackback>></div>
+			</div>
+		</div>
+
+		<!-- 更新列表 -->
+		<br><br><br>
+		<div class="settingsGrid">
+			<div class="settingsHeader options">敬请期待</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">剧情拓展</span><br>
+				<div class="settingsText">
+					- [ ] <b>主动露出想法（在定义的passage，没有事件时：产生可选的想法）</b><br>
+						阁楼、厨房、街上、更衣室、楼梯间、医院、厕所、公园、公交车、郊区、超市、学校天台、罗宾的房间（卖柃檬水时）、商场、酒吧、游泳池、试衣间、 水疗中心（按摩会所）<br>
+						<b>这些地方本来就有，只是做一个可选的额外剧情</b><br>
+					- [ ] <b>露出状态拓展（在已经的exposed指定的passage下，自动触发某些剧情）</b><br>
+						露出在街上、学校、公园、孤儿院、公交车、学校天台、偶遇露出路人事件<br>
+						<b>这些地方的露出原本就有部分剧情，但是剧情量少，我们将其补充</b><br>
+					- [ ] <b>新露出地点（新建某些可能的地点，提供露出活动）</b><br>
+						购物中心厕所、停车场、电梯、电影院、校园角落、摩托车、摩天轮<br>
+						<b>体量较大</b>：<br>
+						- 【空画廊】空画廊，全市最大的人体艺术画作展廊与画室，画作对外提供购买，也提供制定服务<br>
+						- 【建筑工地】工作日有工人干活，而周末工人需要休息：在周末建筑内全裸从一楼步行到顶楼、在工作日建筑内全裸步行100米、在工作日人后全裸极限露出60秒、在挖掘机中全裸摄影（请勿启动挖掘机！）
+				</div>
+			</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">随时脱衣暴露</span><br>
+				<div class="settingsText">
+					- [x] 附近的衣服：<br>
+					- [x] 我确认这里可以放我的衣服！（主动加入安全地区）<br>
+					- [ ] 随地自慰（露出发现系统（怀疑值））
+				</div>
+			</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">勇气系统</span><br>
+				<div class="settingsText">
+					- [ ] 增加勇气值，高勇气值可以帮助突破<b>淫乱promiscuity、暴露exhibitionism、异种deviancy</b>判定。<br>
+					- [ ] 增加冷静值，高冷静时<b>疼痛、性奋、压力、创伤</b>提升速度和<b>自控</b>降低速度 减慢。<br>
+					- [ ] 欲望值：<br>
+						满足感低持续增加欲望、性奋高欲望值高；<br>
+						高潮将会重置欲望值至50%；<br>
+						高欲望时<b>勇气↑、冷静↓</b>，低欲望时反之，高欲望时性奋更容易提升。<br>
+					- [ ] 满足感：<br>
+						<b>完成任务和指定剧情</b>加满足感；<br>
+						满足感会随时间降低；<br>
+						满足感越高，<b>勇气值和冷静值越高</b>。
+				</div>
+			</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">任务系统</span><br>
+				<div class="settingsText">
+					- [ ] 一同露出剧情：主人（惠特尼、艾弗里、高支配艾利克斯）、伙伴（罗宾、凯拉尔、悉尼、低支配艾利克斯）<br>
+					- [ ] 自主想法、主人任务、伙伴提议、普通NPC（贝利、查里、达里尔、哈珀、约旦、布莱尔、萨姆、兰德里、礼顿、梅森）任务或提议<br>
+				</div>
+			</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">服装道具拓展</span><br>
+				<div class="settingsText">
+					- [ ] 更多服装：<br>
+						- 口罩、眼罩，功能拓展<br>
+						- 龟甲缚等露出服装<br>
+						- 身体彩绘<br>
+					- [ ] 更多玩具：<br>
+						- 跳蛋 | 遥控型、静音型、强力型、电击型、吮吸器<br>
+						- 假阳 | 带刺玫瑰、长水晶先生、双头龙、幻龙、自嗨裤<br>
+						- 机械 | 自慰棒、炮机杯<br>
+						- 后穴 | 猫娘插件、兔娘插件、灌肠用洗球<br>
+						- 乳头 | 乳夹、乳钉<br>
+						- 口部 | 口球、阴茎口罩<br>
+						- 猎奇 | 尿道棒、阴蒂钉、龟头钉
+				</div>
+			</div>
+			<div class="settingsToggleItemWide">
+				<span class="gold">其他</span><br>
+				<div class="settingsText">
+					- [x] 修改露出图标（太丑了）<br>
+					- [ ] 排尿描写
+				</div>
+			</div>
+		</div>
+	</div>
+<</widget>>

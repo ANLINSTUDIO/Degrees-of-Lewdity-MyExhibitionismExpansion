@@ -1,0 +1,559 @@
+:: == 随处脱衣 ============================== [widget]
+<<widget "clothingCaptionButtonContainerDisable">> <<if window.mee>>
+    <<if !mee.isSafeAreaForClothes() or mee.isInEvent()>>
+        <<switch mee.clothingCaptionButtonContainerDisabled>>
+            <<case undefined>>
+                <div class="clothing-caption-button-container-disable"/>
+            <<case 1>>
+                <div class="clothing-caption-button-container-disable disabled"/>
+        <</switch>>
+    <<else>>
+        <<switch mee.clothingCaptionButtonContainerDisabled>>
+            <<case 1>>
+                <div class="clothing-caption-button-container-disable disabled"/>
+        <</switch>>
+    <</if>>
+<</if>> <</widget>>
+<<widget "clothingCaptionButtonContainerDisableDo">> <<if window.mee>>
+    <<if !mee.isSafeAreaForClothes() or mee.isInEvent()>>
+        <<switch mee.clothingCaptionButtonContainerDisabled>>
+            <<case undefined>>
+                <<run setTimeout(()=>{$(".clothing-caption-button-container-disable").addClass("disabled")})>>
+                <<set mee.clothingCaptionButtonContainerDisabled to 1>>
+        <</switch>>
+    <<else>>
+        <<switch mee.clothingCaptionButtonContainerDisabled>>
+            <<case 1>>
+                <<run setTimeout(()=>{$(".clothing-caption-button-container-disable").removeClass("disabled")})>>
+                <<set mee.clothingCaptionButtonContainerDisabled to undefined>>
+        <</switch>>
+    <</if>>
+<</if>> <</widget>>
+
+<<widget "clothingCaptionButton">> <<if window.mee>>
+    <div id="clothing-caption-button-temp" style="display: none"><<wardrobeLinks>></div><<run setTimeout(()=>{$("#clothing-caption-button-temp").remove()})>>
+    
+    <<set _onclothes to mee.getOnClothes()>>
+
+    <<if _onclothes>>
+        <div class="clothing-caption-button-container">
+            <<clothingCaptionButtonContainerDisable>>
+            <<for _clothes_object range _onclothes>>
+                <<set _worn_id to _clothes_object.id>>
+                <<set _worn_k to _clothes_object.type>>
+                <<set _worn to _clothes_object.clothes>>
+                <<set _worn_outfit to _clothes_object.outfit?" outfit":"">>
+                <div @class="'clothing-caption-button'+_worn_outfit" @onclick="'mee.removeClothes(`'+_worn_k+'`)'">
+                    <<clothingicon _worn _worn_k>>
+                    <<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
+                    <div>_label</div>
+                </div>
+            <</for>>
+        </div>
+    <</if>>
+
+    <<set _nearbyClothes to mee.getNearbyClothes()>>
+
+    <<set _start to "">>
+    <<if !_nearbyClothes and !mee.clothingCaptionButtonContainerNearby>>
+        <!-- 没有附近衣服 -->
+        <<set _start to " start">>
+    <<elseif _nearbyClothes and !mee.clothingCaptionButtonContainerNearby>>
+        <!-- 进入附近衣服 -->
+        <<set _start to " start">>
+        <<run setTimeout(()=>{$(".clothing-caption-button-container-nearby.start").removeClass("start")}, mee.展开附近衣服延迟)>>
+        <<set mee.clothingCaptionButtonContainerNearby to 1>>
+    <<elseif _nearbyClothes and mee.clothingCaptionButtonContainerNearby>>
+        <!-- 持续附近衣服 -->
+    <<elseif !_nearbyClothes and mee.clothingCaptionButtonContainerNearby>>
+        <!-- 离开附近衣服 -->
+        <<run setTimeout(()=>{$(".clothing-caption-button-container-nearby").addClass("start")}, mee.展开附近衣服延迟)>>
+        <<set mee.clothingCaptionButtonContainerNearby to undefined>>
+    <</if>>
+    
+    <div @class="'clothing-caption-button-container-nearby '+_start"><div>
+        <div style="margin-bottom: -10px; font-size: small;">附近的衣服: </div>
+        <div class="clothing-caption-button-container">
+            <<if _nearbyClothes>>
+                <<clothingCaptionButtonContainerDisable>>
+                <<for _clothes_object range _nearbyClothes>>
+                    <<set _worn_id to _clothes_object.id>>
+                    <<set _worn_k to _clothes_object.type>>
+                    <<set _worn to _clothes_object.clothes>>
+                    <<set _worn_outfit to _clothes_object.outfit?" outfit":"">>
+                    <div @class="'clothing-caption-button'+_worn_outfit" @onclick="'mee.getClothes(`'+_worn_id+'`)'">
+                        <<clothingicon _worn _worn_k>>
+                        <<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
+                        <div>_label</div>
+                    </div>
+                <</for>>
+            <<else>>
+                <div class="clothing-caption-button"/>
+            <</if>>
+        </div>
+    </div></div>
+
+    <<if _clothesChanged>>
+        <br>
+        <<button [[继续|$passage]]>><</button>>
+        <small class="red">部分选项产生于更换衣服之前，点击更新选项和当前剧情（可选，正在事件时谨慎使用）</small>
+    <</if>>
+
+    <<if !mee.isSafeAreaForClothes() and !mee.isInEvent() and !mee.isProhibitAreaForClothes()>>
+        <br>
+        <<button "<div id='mee-add-safe-area-for-clothes-button'>我确定这里可以安全地放我的衣服！</div>">><<run mee.addSafeAreaForClothes()>><</button>>
+        <small class="red">由于不是主要区域，需要你手动判断此处是否安全可靠</small>
+    <</if>>
+    
+    <<clothingCaptionButtonContainerDisableDo>>
+<</if>> <</widget>>
+
+:: == 购物中心厕所 ==========================
+:: Shopping Centre Mens Toilets
+<div id="额外安全放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+<<set $outside to 0>><<set $location to "shopping_centre">><<effects>><<set $bus to "high">>
+
+<<if hasSexStat("exhibitionism", 3) or $player.gender_appearance is "m" or $_n>>
+    你在购物中心的男厕所里。<br>
+    <<if $daily.entershoptoilet isnot 1 and $player.gender_appearance is "f">>
+        <<if $_n>>
+            晚上的购物中心一片寂静，除了不时巡逻的保安，这里也许非常安全。 <br>
+        <<else>>
+            尽管经你再三确认过，此时的厕所不太可能进人，但是这谁也说不准。 <<exhibitionismN 3>>
+        <</if>>
+        <<set $daily.entershoptoilet to 1>>
+    <</if>>
+
+    <!-- <<storeon "parkmens" "check">>
+    <<if _store_check is 1>>
+        你的衣服存放在水槽的下面。
+    <</if>> -->
+    <br>
+
+    <<if $stress gte $stressmax>>
+        <<passoutshop>>
+    <<else>>
+        <<icon "toilet-urinal.png">><<link [[小便池 (0:01)|Shopping Centre Mens Toilets Pee]]>><</link>><<if $_f>><<exhibitionist 5>><</if>><br>
+        <<icon "toilet-stall.png">><<link [[寻找一个隔间|Shopping Centre Mens Toilets Stall]]>><</link>>
+        <br>
+        <<getouticon>><<link [[离开|Shopping Centre]]>><</link>>
+        <!-- <<if dangerEvent() and $_f and $eventskip is 0>>
+            <<eventstoilets>>
+        <<else>>
+            <<storeactions "parkmens">>
+            <<if hasSexStat("exhibitionism", 5) and Time.dayState is "day" and $exposed gte 2 and !$daily.parkStreak>>
+                <span class="lewd">赤身裸体地站在洗手间里，你有一种想裸奔穿过公园的淫荡冲动。很多人会看到你的。</span>
+                <br><br>
+                <<ind>><<link [[裸奔|Park Streak]]>><<set $daily.parkStreak to true>><<pass 1>><<arousal 100>><</link>><<exhibitionist5>><<garousal>>
+                <br>
+            <<elseif hasSexStat("exhibitionism", 4)>>
+                <span class="lewd">一个淫荡的想法冲击着你。</span> 你可以脱光衣服，在某个隔间里等待毫无戒心的路人看到你。
+                <<if Time.dayState is "dusk" or $_n>>
+                    <br><br>
+                    <<skinicon "strip">><<link [[脱光衣服在隔间里等待 (0:20)|Toilets Stall]]>><<pass 20>><</link>><<exhibitionist4>>
+                    <br>
+                <<else>>
+                    <span class="blue">然而，最好还是等到夜幕降临。</span>
+                    <br><br>
+                <</if>>
+            <</if>>
+            <<mirroricon>><<link [[照镜子 (0:02)|Simple Mirror]]>><<pass 2>><<set $previousPassage = $passage>><</link>>
+            <br>
+            <<if hasSexStat("exhibitionism", 3) or $arousal gte 9000>>
+                <<skinicon "masturbate">><<link [[自慰|"Men's Toilets Masturbation"]]>><<set $masturbationstart to 1>><</link>>
+                <br>
+            <</if>>
+            <<if setup.bodyliquid.combined("face") gte 1 or $skin.left_cheek.pen is "pen" or $skin.right_cheek.pen is "pen" or $skin.forehead.pen is "pen" or $skin.left_cheek.pen is "mud" or $skin.right_cheek.pen is "mud" or $skin.forehead.pen is "mud" or $skin.left_cheek.pen is "lipstick" or $skin.right_cheek.pen is "lipstick" or $skin.forehead.pen is "lipstick">>
+                <<bathroomicon "sink">><<link [[洗脸 (0:05)|"Men's Toilets Wash"]]>><<pass 5>><</link>>
+                <br>
+            <</if>>
+            <<if setup.bodyliquid.combined("mouth") gte 1>>
+                <<bathroomicon "sink">><<link [[漱口 (0:05)|"Men's Toilets Rinse"]]>><<pass 5>><</link>>
+                <br>
+            <</if>>
+            <<pregnancyTest "Men's Toilets">>
+            <<storeon "parkmens" "check">>
+            <<if _store_check isnot 1>>
+                <<getouticon>><<link [[离开|Park]]>><</link>>
+            <<elseif $exposed gte 2 and hasSexStat("exhibitionism", 3)>>
+                <<sneakicon>><<link [[溜出去|Park Toilets Sneak]]>><<set $phase to 2>><</link>><<exhibitionist3>>
+            <<elseif $exposed is 1>>
+                <<sneakicon>><<link [[溜出去|Park Toilets Sneak]]>><<set $phase to 1>><</link>><<exhibitionist1>>
+            <<elseif $exposed lte 0>>
+                <<getouticon>><<link [[离开|Park]]>><</link>>
+            <</if>>
+        <</if>> -->
+    <</if>>
+
+    <!-- <<set $eventskip to 0>>
+    <<storecleanup>> -->
+<<else>>
+    你靠近购物中心的男厕所。<br><br>
+    闻着男厕所中传出的香薰都难以掩盖的骚臭味道，你不经性奋起来。<<garousal>><br><br>
+
+    你装作不经意在门口等人的样子，哪怕周围没有一个人，你还是不敢进入其中，这毕竟还是男厕所。<br>
+    如果里面有人呢，我进去被他抓个正着的话，会不会被他强奸呢。或者……或者要是我刚进去就有人进来了呢，他会不会觉得我是个变态，说我喜欢在男厕所里，然后就把我扒光捆在里面被人当做公共肉便器呢……<br>
+    唔，这样……不行，太刺激了，太危险了。<br>
+    想到这里，你的心果然噗嗤噗嗤跳的飞快，不经又觉得非常性奋<<garousal>><br><br>
+    <<if $daily.entershoptoiletfailed isnot 1>>
+        <<arousal 30>><<arousal 30>>
+        <<set $daily.entershoptoiletfailed to 1>>
+    <</if>>
+    <<getouticon>><<link [[离开|Shopping Centre]]>><</link>>
+<</if>>
+
+:: Shopping Centre Mens Toilets Pee
+<div id="额外禁止放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+<<if $daily.shoptoiletpee isnot 1>>
+    你走近小便池。<br><br>
+    <<if $_f>>
+        你脱下裤子，用手掌压住两胯，给中间尿尿的地方留出空间，将自己的腰尽可能的往前顶，整个人以一种弯弓的形状，尿液蓄势待发。<br>
+        <<if $_n>>
+            尿液哗哗喷射而出。<br>
+            尽管这是晚上，整个购物中心一片寂静，除了不时巡逻的保安，这里也许非常安全，不会……应该不会有人来吧。<br>
+            但是！如果是保安要来上厕所呢，如果他进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。<<gggarousal>><<arousal 300>>
+        <<else>>
+            尿液哗哗喷射而出。<br>
+            尽管经你再三确认过，此时的厕所不太可能进人，但是这谁也说不准。如果真的有人呢！如果真的有人进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。<<gggarousal>><<arousal 300>>
+        <</if>> <br>
+        <<exhibitionismN 5>>
+    <<else>>
+        你放下裤子，用右手握住用来尿尿的工具，精准地对准小便池的下水口，将自己的腰尽可能的往前顶，整个人以一种弯弓的形状，尿液蓄势待发。<br><br>
+    <</if>>
+    你在小便池放了水。<<pass 1>><<llstress>><<stress -12>><br><br>
+    <<set $daily.shoptoiletpee to 1>>
+<<else>>
+    你的膀胱空荡荡的，已经放不出更多水了。<br><br>
+<</if>>
+<<if hasSexStat("promiscuity", 2)>>
+    <<icon "smell.png">><<link [[闻|Shopping Centre Mens Toilets Urinal Smell]]>><</link>><<promiscuous 2>><br>
+<<else>>
+    <<icon "smell.png">>闻<<promiscuous 2>> | <<insufficientStat "promiscuity" "鼓起勇气去闻小便器">><br>
+<</if>>
+<<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Urinal Smell
+<div id="额外禁止放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+你心跳如鼓，终于鼓起勇气，蹲下身凑近那排被无数男人使用过的小便器。瓷面还残留着浅黄的痕迹，尿液在沟槽里缓缓汇聚，散发出酸臭中带着腥甜的浓烈气息。<<garousal>><<arousal 30>><br><br>
+你把鼻子几乎贴上去，深深吸了一口。那股骚味直冲脑门，像无数陌生男人刚刚释放过的滚烫液体，混合着汗味和前列腺液的微腥，瞬间让性奋起来。<<garousal>><<arousal 30>><br><br>
+更深处的尿液积着一层薄薄的泡沫，你忍不住再吸几口，想象着<<if $_n>>白天<<else>>刚才<</if>>有人站在这里，粗长的肉棒对准便池猛烈喷射，热尿冲刷着瓷壁的画面。那味道越闻越让人上瘾，骚臭中透着一丝淫靡的甜腻，像在公开场所偷偷品尝禁忌的精液与尿液的混合。<<ggarousal>><<arousal 100>><br><br>
+你跪在冰冷的地砖上，贪婪地闻着。<<if $_n>>商场外面一片寂静，<<else>>商场外面人声熙攘，而这里<</if>>只有你独自沉沦在这股男人专属的骚臭里，越来越深，越来越不能自拔。<<gggarousal>><<arousal 300>><<llstress>><<stress -12>><br><br>
+<<promiscuityN 2>>
+<<if hasSexStat("promiscuity", 3)>>
+    <<skinicon "masturbate">><<link [[自慰|Shopping Centre Mens Toilets Urinal Masturbation]]>><<set $masturbationstart to 1>><</link>><<promiscuous 3>><br>
+<<else>>
+    <<skinicon "masturbate">>自慰<<promiscuous 3>> | <<insufficientStat "promiscuity" "鼓起勇气在小便池旁自慰">><br>
+<</if>>
+<<if hasSexStat("promiscuity", 4)>>
+    <<icon "lick.png">><<link [[舔舐|Shopping Centre Mens Toilets Urinal Lick]]>><</link>><<promiscuous 4>><br>
+<<else>>
+    <<icon "lick.png">>舔舐<<promiscuous 4>> | <<insufficientStat "promiscuity" "鼓起勇气去舔小便器">><br>
+<</if>>
+<<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Urinal Lick
+<div id="额外禁止放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+<<effects>>
+你忍不住又吸了几口，骚味越来越浓，像无数陌生男人刚刚在这里释放过的滚烫尿液还在空气里飘着。每一次呼吸都让那股淫靡的臭味更深入肺里，刺激得你身体发软，脑子里全是刚才有人站在这里猛烈喷射热尿的画面。你的呼吸越来越急，手指已经开始发抖，却还是舍不得离开这股让人上瘾的男人专属气息。<<gggarousal>><<arousal 300>><br><br>
+终于忍不住了。你伸出舌头，小心翼翼地舔上小便器边缘残留的尿痕。咸涩又骚臭的味道立刻在口腔里炸开，带着浓重的尿骚和一丝前列腺液的微腥。你舔得越来越大胆，舌头沿着沟槽往下，把那些浑浊的液体卷进嘴里，吞咽时喉咙里全是那股淫乱的臭味，刺激得你轻轻哼出声。<<gggarousal>><<arousal 300>><<ggcontrol>><<control 3>><br><br>
+<<promiscuityN 4>>
+<<if hasSexStat("promiscuity", 3)>>
+    <<skinicon "masturbate">><<link [[自慰|Shopping Centre Mens Toilets Urinal Masturbation]]>><<set $masturbationstart to 1>><</link>><<promiscuous 3>><br>
+<<else>>
+    <<skinicon "masturbate">>自慰<<promiscuous 3>> | <<insufficientStat "promiscuity" "鼓起勇气在小便池旁自慰">><br>
+<</if>>
+<<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Urinal Masturbation
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+<<effects>><<set _enableSexToys to true>>
+<<if $masturbationstart is 1>>
+    <<set $masturbationstart to 0>>
+    <<set $masturbationstat += 1>>
+    <<masturbationstart>>
+    你跪在冰冷的地砖上，迫不及待地把手伸向自己最敏感的地方。厕所外回荡着隐约的脚步声，每一次传来的动静都让你心跳骤停——万一有人进来了怎么办？可正是这种随时可能被发现的恐惧，让下身的快感像电流一样窜遍全身，比平时任何一次自慰都要强烈百倍。<br><br>
+    你一边<<if $_f>>揉弄<<else>>套弄<</if>>、一边想象着门外突然有人推门而入的画面：那人会看见你跪在小便器前，舌头还沾着别人的尿液，<<if $_f>>手指深深埋在自己体内快速抽动<<else>>手还在不停的上下撸动<</if>>。越是害怕被撞见，身体就越是诚实。<<if $_f>>穴里<<else>>肉棒<</if>>一次次收紧，<<if $_f>>淫水<<else>>前列腺液<</if>>不断往外溢，空气中的尿骚味混着自己的骚味，把整个隔间都染得淫靡不堪。你咬着嘴唇不敢出声，却忍不住轻轻哼出细碎的喘息，生怕被外面的人听见。<br><br>
+    环境的每一个细节都在放大这种禁忌的刺激。瓷砖反着冷光，小便器沟槽里还积着浅黄的尿液，头顶的排气扇嗡嗡作响，偶尔有人在外面洗手、整理衣服的声音清晰可闻。你强迫自己再靠近一点，把脸贴得更近，让那股浓烈的男人尿骚完全包裹自己，同时手的动作越来越快、越来越狠。恐惧和兴奋交织在一起，脑子里反复意淫着“如果现在有人推门进来……”的画面，却又舍不得停下来，反而因为这份危险而把自己推向更高的高潮边缘。<br><br>
+    <<if $_f>>你双腿大张跪着，两根手指深深插进湿得一塌糊涂的穴里快速抽插，拇指不断按压肿胀的阴蒂。每一次门外传来脚步声，穴肉就剧烈收缩一次，淫水顺着指缝往下滴，滴在地砖上发出细微的声响。你一边害怕被发现，一边却把身体敞得更开，想象着陌生男人推门看见自己这副淫荡模样时的表情，快感一波接一波地涌上来，终于在强烈的尿骚味中颤抖着喷出大股透明的淫液。<br><br>
+    <<else>>你握着硬得发紫的肉棒飞快套弄，龟头不断渗出清液，混着从小便器上舔来的尿液味道。门外每一次有人走动，你就紧张得肉棒狠狠跳动一次，却又忍不住把腰挺得更前，想象着有人突然推门进来看见自己跪在这里自慰的画面。恐惧让快感更加尖锐，你咬紧牙关低喘着，终于在浓烈的骚臭味中把浓稠的精液一股股射在小便器上，和残留的尿液混在一起，场面淫乱到极点。<br><br>
+    <</if>>
+    <<promiscuityN 3>>
+<<elseif $lick is 1>>
+    你忍不住又吸了几口，骚味越来越浓，像无数陌生男人刚刚在这里释放过的滚烫尿液还在空气里飘着。每一次呼吸都让那股淫靡的臭味更深入肺里，刺激得你身体发软，脑子里全是刚才有人站在这里猛烈喷射热尿的画面。你的呼吸越来越急，手指已经开始发抖，却还是舍不得离开这股让人上瘾的男人专属气息。<<gggarousal>><<arousal 300>><br><br>
+    你伸出舌头，小心翼翼地舔上小便器边缘残留的尿痕。咸涩又骚臭的味道立刻在口腔里炸开，带着浓重的尿骚和一丝前列腺液的微腥。你舔得越来越大胆，舌头沿着沟槽往下，把那些浑浊的液体卷进嘴里，吞咽时喉咙里全是那股淫乱的臭味，刺激得你轻轻哼出声。<<gggarousal>><<arousal 300>><<ggcontrol>><<control 3>><br><br>
+    <<promiscuityN 4>>
+    你一边贪婪地舔着，一边不停手上的自慰动作。<br><br>
+    <<if $_f>>手指伸进早已湿透的穴里，快速抽插，另一只手揉捏着肿胀的阴蒂。骚臭的尿液味道混着自己穴水的腥甜，让你夹紧双腿，穴口不断收缩，喷出一股股淫水，整个人跪在冰冷的地砖上颤抖着高潮。<br><br>
+    <<else>>你握住早已硬得发疼的肉棒，飞快套弄，龟头不断渗出清液。骚臭的尿液味道钻进鼻腔，让你越撸越狠，终于低吼着把浓稠的精液一股股射在小便器上，和那些残留的尿液混在一起，场面淫乱至极。<br><br>
+    <</if>>
+<<else>>
+    <<rng 4>>
+    <<switch $rng>>
+    <<case 1>>商场男厕里回荡着隐约的脚步声和冲水声，每一次门外传来的动静都让你心跳骤停——万一有人推门进来怎么办？可正是这种随时可能被发现的恐惧，让下身的快感像电流一样窜遍全身，比平时任何一次自慰都要强烈百倍。<br><br>
+    <<case 2>>你一边<<if $_f>>揉弄<<else>>套弄<</if>>、一边想象着门外突然有人推门而入的画面：那人会看见你跪在小便器前，舌头还沾着别人的尿液，<<if $_f>>手指深深埋在自己体内快速抽动<<else>>手还在不停的上下撸动<</if>>。越是害怕被撞见，身体就越是诚实。<<if $_f>>穴里<<else>>肉棒<</if>>一次次收紧，<<if $_f>>淫水<<else>>前列腺液<</if>>不断往外溢，空气中的尿骚味混着自己的骚味，把整个隔间都染得淫靡不堪。你咬着嘴唇不敢出声，却忍不住轻轻哼出细碎的喘息，生怕被外面的人听见。<br><br>
+    <<case 3>>环境的每一个细节都在放大这种禁忌的刺激。瓷砖反着冷光，小便器沟槽里还积着浅黄的尿液，头顶的排气扇嗡嗡作响，偶尔有人在外面洗手、整理衣服的声音清晰可闻。你强迫自己再靠近一点，把脸贴得更近，让那股浓烈的男人尿骚完全包裹自己，同时手的动作越来越快、越来越狠。恐惧和兴奋交织在一起，脑子里反复意淫着“如果现在有人推门进来……”的画面，却又舍不得停下来，反而因为这份危险而把自己推向更高的高潮边缘。<br><br>
+    <<case 4>>
+        <<if $_f>>你双腿大张跪着，两根手指深深插进湿得一塌糊涂的穴里快速抽插，拇指不断按压肿胀的阴蒂。每一次门外传来脚步声，穴肉就剧烈收缩一次，淫水顺着指缝往下滴，滴在地砖上发出细微的声响。你一边害怕被发现，一边却把身体敞得更开，想象着陌生男人推门看见自己这副淫荡模样时的表情，快感一波接一波地涌上来，终于在强烈的尿骚味中颤抖着喷出大股透明的淫液。<br><br>
+        <<else>>你握着硬得发紫的肉棒飞快套弄，龟头不断渗出清液，混着从小便器上舔来的尿液味道。门外每一次有人走动，你就紧张得肉棒狠狠跳动一次，却又忍不住把腰挺得更前，想象着有人突然推门进来看见自己跪在这里自慰的画面。恐惧让快感更加尖锐，你咬紧牙关低喘着，终于在浓烈的骚臭味中把浓稠的精液一股股射在小便器上，和残留的尿液混在一起，场面淫乱到极点。<br><br>
+        <</if>>
+    <</switch>>
+<</if>>
+<<masturbationeffects>>
+<<masturbationactions>>
+
+<<if hasSexStat("promiscuity", 4)>>
+    <<if $lick is 1>>
+        <<icon "lick.png">><<link [[继续舔|Shopping Centre Mens Toilets Urinal Masturbation]]>><<set $lick to 1>><</link>><<promiscuous 4>><br>
+    <<else>>
+        <<icon "lick.png">><<link [[舔舐小便池|Shopping Centre Mens Toilets Urinal Masturbation]]>><<set $lick to 1>><</link>><<promiscuous 4>><br>
+    <</if>>
+<</if>>
+<<unset $lick>>
+
+<<masturbationControls>>
+
+:: Shopping Centre Mens Toilets Urinal Masturbation Finish
+<<unset $lick>>
+<<effects>>
+……
+<br><br>
+<<endmasturbation>>
+<<clotheson>>
+<<endcombat>>
+<<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Stall
+<div id="额外安全放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_f to $player.gender_appearance is "f">>
+<<rng 5>> <<if $rng lte 1>>
+    你走向最后一个隔间。门无法打开，里面传出"有人！"的男性声音。<br><br>
+    <<if $_f>>
+        有人？听到这话你吓傻了，如果说这个隔间有人的话，那他随时都可能出来，特别是我敲了他的门之后。<br>
+        我要跑吗？如果出门正好又撞见一个男人呢？我会被前后夹鸡吗？<br>
+        那如果我不离开，等他开门看见身为女性的我，他会认为我是一个女变态吗，他会把我抓起来当成肉便器一样玩弄吗？<br>
+        想到这里，你的心果然噗嗤噗嗤跳的飞快，不经又觉得非常性奋。<<gggarousal>><<arousal 300>>
+        <br><br>
+        <<icon "toilet-stall.png">><<link [[躲在空隔间内|Shopping Centre Mens Toilets Hide]]>><</link>><br>
+        <<rng 3>> <<if $rng lte 1>>
+            <<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+        <<else>>
+            <<ind>><<link [[继续|Shopping Centre Mens Toilets Caught]]>><<set $phase to 2>><</link>>
+        <</if>>
+    <<else>>
+        <<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+    <</if>>
+<<else>>
+    你走进最后一个隔间。<br><br>
+    <<icon "toilet.png">><<link [[排泄 (0:05)|Shopping Centre Mens Toilets Excrete]]>><</link>><br>
+    <<skinicon "masturbate">><<link [[自慰|Shopping Centre Mens Toilets Masturbation]]>><<set $masturbationstart to 1>><</link>><br>
+    <<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+<</if>>
+
+:: Shopping Centre Mens Toilets Hide
+<div id="额外禁止放衣区域"/>
+你赶紧找到一个空的隔间躲了起来。<br>
+几乎密不透风的环境让你的呼吸声显得更加沉重，紧张的感觉还让你的心跳和呼吸加速，但是这里的骚臭味和粪便的臭味让你不敢大口呼吸，你感觉你的大脑有点缺氧，这却给你带来了一丝性奋。<<gggarousal>><<arousal 300>>
+<br><br>
+<<icon "toilet.png">><<link [[排泄 (0:05)|Shopping Centre Mens Toilets Excrete]]>><</link>><br>
+<<skinicon "masturbate">><<link [[自慰|Shopping Centre Mens Toilets Masturbation]]>><<set $masturbationstart to 1>><</link>><br>
+<<ind>><<link [[等待人走开 (0:05)|Shopping Centre Mens Toilets]]>><<pass 5>><</link>>
+
+:: Shopping Centre Mens Toilets Excrete
+<div id="额外禁止放衣区域"/>
+你在马桶排泄了。<<pass 5>><<llstress>><<stress -12>><br><br>
+<<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Masturbation
+<<effects>><<set _enableSexToys to true>>
+<<if $masturbationstart is 1>>
+    <<set $masturbationstart to 0>>
+    <<set $masturbationstat += 1>>
+    <<masturbationstart>>
+    <<if $_n>>
+        喘息的声音从你的隔间传出。<br>
+        尽管这是晚上，整个购物中心一片寂静，除了不时巡逻的保安，这里也许非常安全，不会……应该不会有人来吧。<br>
+        但是！如果是保安要来上厕所呢，如果他进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。
+    <<else>>
+        喘息的声音从你的隔间传出。<br>
+        尽管经你再三确认过，此时的厕所不太可能进人，但是这谁也说不准。如果真的有人呢！如果真的有人进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。
+    <</if>>
+    <br><br>
+<</if>>
+<<masturbationeffects>>
+<<masturbationactions>>
+<<masturbationControls>>
+
+:: Shopping Centre Mens Toilets Masturbation Finish
+<<effects>>
+你耳听八方，以防你分心时有人偷偷进来。你什么都没听到。
+<br><br>
+<<endmasturbation>>
+<<clotheson>>
+<<endcombat>>
+<<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Mens Toilets Caught
+<div id="额外禁止放衣区域"/>
+<<switch $phase>>
+<<case 1>>
+    
+<<case 2>>
+    正当你犹豫的时候，那个隔间突然想起冲水的声音，随后门猛地打开，将你吓了一大跳。<br><br>
+<</switch>>
+<<icon "toilet-stall.png">><<link [[尝试快速躲入空隔间内|Shopping Centre Mens Toilets Hide]]>><</link>><br>
+<<ind>><<link [[继续|Shopping Centre Mens Toilets Caught 2]]>><</link>>
+
+:: Shopping Centre Mens Toilets Caught 2
+<div id="额外禁止放衣区域"/>
+<<ind>><<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+
+:: Shopping Centre Womens Toilets
+<div id="额外安全放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_m to $player.gender_appearance is "m">>
+<<set $outside to 0>><<set $location to "shopping_centre">><<effects>><<set $bus to "high">>
+
+<<if hasSexStat("exhibitionism", 3) or $_m or $_n>>
+    你在购物中心的女厕所里。<br>
+    <<if $daily.entershoptoilet isnot 1 and $player.gender_appearance is "m">>
+        <<if $_n>>
+            晚上的购物中心一片寂静，除了不时巡逻的保安，这里也许非常安全。 <br>
+        <<else>>
+            尽管经你再三确认过，此时的厕所不太可能进人，但是这谁也说不准。 <<exhibitionismN 3>>
+        <</if>>
+        <<set $daily.entershoptoilet to 1>>
+    <</if>>
+    <br>
+
+    <<if $stress gte $stressmax>>
+        <<passoutshop>>
+    <<else>>
+        <<icon "toilet-stall.png">><<link [[寻找一个隔间|Shopping Centre Womens Toilets Stall]]>><</link>>
+        <br>
+        <<getouticon>><<link [[离开|Shopping Centre]]>><</link>>
+    <</if>>
+<<else>>
+    你靠近购物中心的女厕所。<br><br>
+    闻着女厕所中传出的香薰都难以掩盖的骚臭味道，你不经性奋起来。<<garousal>><br><br>
+
+    你装作不经意在门口等人的样子，哪怕周围没有一个人，你还是不敢进入其中，这毕竟还是女厕所。<br>
+    如果里面有人呢，我进去被她抓个正着的话，会不会把我抓起来呢。或者……或者要是我刚进去就有人进来了呢，她会不会觉得我是个变态，说我喜欢在女厕所里，然后就把我扒光捆在里面被人唾弃呢……<br>
+    唔，这样……不行，太刺激了，太危险了。<br>
+    想到这里，你的心果然噗嗤噗嗤跳的飞快，不经又觉得非常性奋<<garousal>><br><br>
+    <<if $daily.entershoptoiletfailed isnot 1>>
+        <<arousal 30>><<arousal 30>>
+        <<set $daily.entershoptoiletfailed to 1>>
+    <</if>>
+    <<getouticon>><<link [[离开|Shopping Centre]]>><</link>>
+<</if>>
+
+:: Shopping Centre Womens Toilets Stall
+<div id="额外安全放衣区域"/>
+<<set $_n to Time.dayState is "night">>
+<<set $_m to $player.gender_appearance is "m">>
+<<rng 5>> <<if $rng lte 1>>
+    你走向最后一个隔间。门无法打开，里面传出"有人！"的女性声音。<br><br>
+    <<if $_m>>
+        有人？听到这话你吓傻了，如果说这个隔间有人的话，那他随时都可能出来，特别是我敲了他的门之后。<br>
+        我要跑吗？如果出门正好又撞见一个女人呢？我会被前后夹击吗？<br>
+        那如果我不离开，等他开门看见身为男性的我，他会认为我是一个男变态吗，他会把我抓起来当成肉便器一样玩弄吗？<br>
+        想到这里，你的心果然噗嗤噗嗤跳的飞快，不经又觉得非常性奋。<<gggarousal>><<arousal 300>>
+        <br><br>
+        <<icon "toilet-stall.png">><<link [[躲在空隔间内|Shopping Centre Womens Toilets Hide]]>><</link>><br>
+        <<rng 3>> <<if $rng lte 1>>
+            <<ind>><<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+        <<else>>
+            <<ind>><<link [[继续|Shopping Centre Womens Toilets Caught]]>><<set $phase to 2>><</link>>
+        <</if>>
+    <<else>>
+        <<ind>><<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+    <</if>>
+<<else>>
+    你走进最后一个隔间。<br><br>
+    <<icon "toilet.png">><<link [[排泄 (0:05)|Shopping Centre Womens Toilets Excrete]]>><</link>><br>
+    <<skinicon "masturbate">><<link [[自慰|Shopping Centre Womens Toilets Masturbation]]>><<set $masturbationstart to 1>><</link>><br>
+    <<ind>><<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+<</if>>
+
+:: Shopping Centre Womens Toilets Hide
+<div id="额外禁止放衣区域"/>
+你赶紧找到一个空的隔间躲了起来。<br>
+几乎密不透风的环境让你的呼吸声显得更加沉重，紧张的感觉还让你的心跳和呼吸加速，但是这里的骚臭味和粪便的臭味让你不敢大口呼吸，你感觉你的大脑有点缺氧，这却给你带来了一丝性奋。<<gggarousal>><<arousal 300>>
+<br><br>
+<<icon "toilet.png">><<link [[排泄 (0:05)|Shopping Centre Womens Toilets Excrete]]>><</link>>
+<<skinicon "masturbate">><<link [[自慰|Shopping Centre Womens Toilets Masturbation]]>><<set $masturbationstart to 1>><</link>><br>
+<<ind>><<link [[等待人走开 (0:05)|Shopping Centre Womens Toilets]]>><<pass 5>><</link>>
+
+:: Shopping Centre Womens Toilets Excrete
+<div id="额外禁止放衣区域"/>
+你在马桶排泄了。<<pass 5>><<llstress>><<stress -12>><br><br>
+<<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+
+:: Shopping Centre Womens Toilets Masturbation
+<<effects>><<set _enableSexToys to true>>
+<<if $masturbationstart is 1>>
+    <<set $masturbationstart to 0>>
+    <<set $masturbationstat += 1>>
+    <<masturbationstart>>
+    <<if $_n>>
+        喘息的声音从你的隔间传出。<br>
+        尽管这是晚上，整个购物中心一片寂静，除了不时巡逻的保安，这里也许非常安全，不会……应该不会有人来吧。<br>
+        但是！如果是保安要来上厕所呢，如果她进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。
+    <<else>>
+        喘息的声音从你的隔间传出。<br>
+        尽管经你再三确认过，此时的厕所不太可能进人，但是这谁也说不准。如果真的有人呢！如果真的有人进来上厕所呢！想到这里你的心咯噔一下，一股刺激、担心、害怕、却又略带期待的复杂心情从心底升起。
+    <</if>>
+    <br><br>
+<</if>>
+<<masturbationeffects>>
+<<masturbationactions>>
+<<masturbationControls>>
+
+:: Shopping Centre Womens Toilets Masturbation Finish
+<<effects>>
+你耳听八方，以防你分心时有人偷偷进来。你什么都没听到。
+<br><br>
+<<endmasturbation>>
+<<clotheson>>
+<<endcombat>>
+<<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+
+:: Shopping Centre Womens Toilets Caught
+<div id="额外禁止放衣区域"/>
+<<switch $phase>>
+<<case 1>>
+    
+<<case 2>>
+    正当你犹豫的时候，那个隔间突然想起冲水的声音，随后门猛地打开，将你吓了一大跳。<br><br>
+<</switch>>
+<<icon "toilet-stall.png">><<link [[尝试快速躲入空隔间内|Shopping Centre Womens Toilets Hide]]>><</link>><br>
+<<ind>><<link [[继续|Shopping Centre Womens Toilets Caught 2]]>><</link>>
+
+:: Shopping Centre Womens Toilets Caught 2
+<div id="额外禁止放衣区域"/>
+<<ind>><<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+
+
+:: Shopping Centre Escape Toilets
+<div id="额外禁止放衣区域"/>
+厕所里只有你一个人。
+<br><br>
+<<towelup>>
+你找到一些毛巾。它们不能代替真正的衣服，但它们可以让你得到保护。你需要尽快找到更坚实的东西。
+<br><br>
+
+<<if $player.gender_appearance is "f">>
+    <<link [[继续|Shopping Centre Womens Toilets]]>><</link>>
+<<else>>
+    <<link [[继续|Shopping Centre Mens Toilets]]>><</link>>
+<</if>>
