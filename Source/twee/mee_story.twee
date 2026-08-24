@@ -108,6 +108,107 @@
     <<clothingCaptionButtonContainerDisableDo>>
 <</if>> <</widget>>
 
+:: == 满足系统 ============================== [widget]
+<<widget "meecaptions">> <<if window.mee>>
+    <<set _courage to mee.courage()>>
+    <<set _couragelevel to mee.couragelevel()>>
+	<<if Number.isFinite(_courage)>>
+		<div id="couragecaption" @title="'勇气: ' + _courage.toFixed(2) + ' | 高勇气值可以帮助突破淫乱、暴露、异种的数值判定'">
+			<div @class="($options.showCaptionText is true ? '' : 'rightMeterText')">
+				勇气：
+				<<if $options.showCaptionText is true>>
+                    <<switch _couragelevel>>
+                        <<case 4>>
+                            <span class="green">你过于冲动了。</span>
+                        <<case 3>>
+                            <span class="teal">你勇气可嘉。</span>
+                        <<case 2>>
+                            <span class="lblue">你很大胆。</span>
+                        <<case 1>>
+                            <span class="purple">你胆子不大。</span>
+                        <<case 0>>
+                            <span class="pink">你没有勇气。</span>
+                    <</switch>>
+				<</if>>
+			</div>
+			<<set _showCaptionText to !$options.showCaptionText>>
+			<<statbarinverted _courage 1000 _showCaptionText>>
+		</div>
+	<</if>>
+
+    <<set _calm to mee.calm()>>
+    <<set _calmlevel to mee.calmlevel()>>
+	<<if Number.isFinite(_calm)>>
+		<div id="calmcaption" @title="'镇静: ' + _calm.toFixed(2) + ' | 高镇静时疼痛、性奋、压力提升速度减慢'">
+			<div @class="($options.showCaptionText is true ? '' : 'rightMeterText')">
+				镇静：
+				<<if $options.showCaptionText is true>>
+                    <<switch _calmlevel>>
+                        <<case 4>>
+                            <span class="green">你心如止水。</span>
+                        <<case 3>>
+                            <span class="teal">你临危不乱。</span>
+                        <<case 2>>
+                            <span class="lblue">你遇事从容不迫。</span>
+                        <<case 1>>
+                            <span class="purple">你难得冷静下来。</span>
+                        <<case 0>>
+                            <span class="pink">你心浮气躁。</span>
+                    <</switch>>
+				<</if>>
+			</div>
+			<<set _showCaptionText to !$options.showCaptionText>>
+			<<statbarinverted _calm 1000 _showCaptionText>>
+		</div>
+	<</if>>
+
+	<<if Number.isFinite($desire)>>
+		<div id="desirecaption" @title="'欲望: ' + $desire.toFixed(2) + ' | 高欲望时勇气增加、镇静减少，低欲望时反之；高潮将会减少50%欲望，有助于增加镇静，减缓负面效果提升速度'">
+			<div @class="($options.showCaptionText is true ? '' : 'rightMeterText')">
+				欲望：
+				<<if $options.showCaptionText is true>>
+					<<if $desire gte 800>>
+						<span class="pink">你欲求不满。</span>
+					<<elseif $desire gte 600>>
+						<span class="purple">你性欲旺盛。</span>
+					<<elseif $desire gte 400>>
+						<span class="blue">你的欲望很正常。</span>
+					<<elseif $desire gte 200>>
+						<span class="lblue">你提不起性趣。</span>
+					<<else>>
+						<span class="teal">你处于贤者时间。</span>
+					<</if>>
+				<</if>>
+			</div>
+			<<set _showCaptionText to !$options.showCaptionText>>
+			<<statbar 0 $desire 1000 _showCaptionText>>
+		</div>
+	<</if>>
+
+	<<if Number.isFinite($satisfaction)>>
+		<div id="satisfactioncaption" @title="'满足: ' + $satisfaction.toFixed(2) + ' | 满足感值为勇气和镇静的基础值'">
+			<div @class="($options.showCaptionText is true ? '' : 'rightMeterText')">
+				满足：
+				<<if $options.showCaptionText is true>>
+                    <<if $satisfaction gte 800>>
+						<span class="green">你如愿以偿。</span>
+					<<elseif $satisfaction gte 600>>
+						<span class="teal">你心满意足。</span>
+					<<elseif $satisfaction gte 400>>
+						<span class="lblue">你感到特别满足。</span>
+					<<elseif $satisfaction gte 200>>
+						<span class="purple">你觉得无聊。</span>
+					<<else>>
+						<span class="pink">你感受着时间的不断流逝。</span>
+					<</if>>
+				<</if>>
+			</div>
+			<<set _showCaptionText to !$options.showCaptionText>>
+			<<statbarinverted $satisfaction 1000 _showCaptionText>>
+		</div>
+	<</if>>
+<</if>> <</widget>>
+
 :: == 购物中心厕所 ==========================
 :: Shopping Centre Mens Toilets
 <div id="额外安全放衣区域"/>

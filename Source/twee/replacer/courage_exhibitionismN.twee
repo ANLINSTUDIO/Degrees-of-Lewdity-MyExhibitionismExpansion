@@ -1,0 +1,8 @@
+		<<if !hasSexStat("exhibitionism", $_n, false) and mee.couragelevel() gte 1>>
+			<<if $_n is 6>>
+				<span @class="'red ' + basicJitterCss()">头有些晕，全身温热血液极速流动，你能听见自己的心跳声。你希望自己之后会忘记这件冲动之下做出的事。</span>
+			<<else>>
+				<span @class="'blue ' + basicJitterCss()">你觉得心脏怦怦直跳，不断给自己打气的勇气促使你进行当下及时行乐的暴露。</span>
+			<</if>>
+		<</if>>
+		<<if !hasSexStat("exhibitionism", $_n, false) and $drunk gte 1>>

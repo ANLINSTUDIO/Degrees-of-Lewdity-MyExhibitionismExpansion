@@ -4,11 +4,12 @@ mee.额外禁止放衣区域 = [
     "Settings", "Attitudes",
     "Wardrobe", "Changing Room", "Bed",
     "Clothing Shop", "Forest Shop", "School Library Shop", "Adult Shop Store",
-    "PillCollection", "Sextoys Inventory", "Mirror", "Containers"
+    "PillCollection", "Sextoys Inventory", "Mirror", "Containers", "Bath"
 ];
 mee.额外安全放衣区域 = [
     "Shopping Centre", "Shopping Centre Top",
     "Bus",
+    "Bathroom"
 ];
 
 // 初始化
@@ -16,7 +17,55 @@ mee.startup = function() {
     V.safeAreaForClothes = V.safeAreaForClothes || [];
     V.safeAreaForClothesTemp = V.safeAreaForClothesTemp || [];
     V.wardrobesground = V.wardrobesground || {};
+
+    V.desire = V.desire ?? 500;
+    V.satisfaction = V.satisfaction ?? 100;
+
+    V.taskstat = V.taskstat ?? 0;
+    V.mee_masturbationstatflag = V.mee_masturbationstatflag ?? V.masturbationstat;
+    V.mee_taskstatflag = V.mee_taskstatflag ?? 0;
 };
+
+// 注入原版函数
+mee.onFunction = function(name, func) {
+    new Proxy(window[name], {
+        apply: function(target, thisArg, argumentsList) {
+            let result = target.apply(thisArg, argumentsList);
+            func.apply(thisArg, argumentsList);
+            return result;
+        }
+    });
+};
+mee.onMacro = function(name, func) {
+    let originalMacro = Macro.get(name);
+    if (originalMacro) {
+        let oldHandler = originalMacro.handler;
+        Macro.delete(name);
+        Macro.add(name, {
+            handler: function () {
+                oldHandler.apply(this, arguments);
+                func.apply(this, arguments);
+            }
+        });
+    }
+};
+
+minutePassed = new Proxy(minutePassed, {
+    apply: function(target, thisArg, argumentsList) {
+        mee.minutePassed(...argumentsList);
+        return target.apply(thisArg, argumentsList);
+    }
+});
+dayPassed = new Proxy(dayPassed, {
+    apply: function(target, thisArg, argumentsList) {
+        mee.dayPassed(...argumentsList);
+        return target.apply(thisArg, argumentsList);
+    }
+});
+$(document).one(":passageinit", function () {
+    mee.onMacro("orgasm", mee.orgasm);
+});
+
 
 // 衣服操作
 mee.setClothes = function(slot, clothes){
@@ -228,4 +277,111 @@ mee.addSafeAreaForClothes = function() {
             button.parentElement.disabled = true;
         }
     }
+}
+
+// 满足系统
+mee.courage = function() {
+    mee.startup();
+    let courage = V.satisfaction;
+    let mod = 1;  // 修正值
+
+    // 欲望修正
+    // 高欲望时 勇气↑、镇静↓ ，低欲望时反之
+    mod += (V.desire - 500) / 500;
+
+    return Math.round(  Math.max(0, Math.min(1000, courage * mod))  *100)/100;
+}
+mee.couragelevel = function() {
+    let courage = mee.courage();
+    if (courage < 200) {
+        return 0;
+    } else if (courage < 400) {
+        return 1;
+    } else if (courage < 600) {
+        return 2;
+    } else if (courage < 800) {
+        return 3;
+    } else {
+        return 4;
+    }
+}
+mee.courageStatModifier = function() {
+	return mee.couragelevel() * 10;
+}
+mee.calm = function() {
+    mee.startup();
+    let calm = V.satisfaction;
+    let mod = 1;  // 修正值
+
+    // 欲望修正
+    // 高欲望时 勇气↑、镇静↓ ，低欲望时反之
+    mod -= (V.desire - 500) / 500;
+
+    return Math.round(  Math.max(0, Math.min(1000, calm * mod))  *100)/100;
+}
+mee.calmlevel = function() {
+    let calm = mee.calm();
+    if (calm < 200) {
+        return 0;
+    } else if (calm < 400) {
+        return 1;
+    } else if (calm < 600) {
+        return 2;
+    } else if (calm < 800) {
+        return 3;
+    } else {
+        return 4;
+    }
+}
+mee.calmStatModifier = function() {
+    return 1.0 / (mee.calmlevel()+1);
+}
+mee.setDesire = function(value) {
+    V.desire = Math.round(  Math.max(1, Math.min(1000, value))  *100)/100;
+}
+mee.addDesire = function(value) {
+    mee.setDesire((V.desire??500) + value)
+}
+mee.setSatisfaction = function(value) {
+    V.satisfaction = Math.round(  Math.max(0, Math.min(1000, value))  *100)/100;
+}
+mee.addSatisfaction = function(value) {
+    mee.setSatisfaction((V.satisfaction??100) + value)
+}
+
+mee.minutePassed = function(minutes) {
+    // 不使用 mee.startup(); 避免处理太多
+    V.desire = V.desire ?? 0;
+    let _desiremod = 0;
+
+    // 基础减少
+    _desiremod -= 0.1;
+    // 满足感低持续增加欲望
+    if (V.satisfaction < 800) {
+        _desiremod += (800 - V.satisfaction) / 100 / 5;
+    } else {
+        _desiremod -= 1;
+    }
+    // 性奋高欲望值高
+    _desiremod += (V.arousal / V.arousalmax) * 10;
+
+    mee.addDesire(_desiremod * minutes);
+}
+mee.dayPassed = function() {
+    mee.startup();
+    
+    // 满足感处理（基础-50，本日高潮数+10*5，任务完成数+10*n, ……）
+    mee.setSatisfaction(Math.round(  Math.max(0, V.satisfaction 
+        - 50 
+        + Math.min((V.masturbationstat - (V.mee_masturbationstatflag??V.masturbationstat)) * 10, 50)
+        + ((V.taskstat??0) - (V.mee_taskstatflag??0)) * 10
+    )));
+
+    // 记录数据
+    V.mee_masturbationstatflag = V.masturbationstat;
+    V.mee_taskstatflag = V.taskstat;
+}
+mee.orgasm = function() {
+    mee.setDesire(V.desire / 2);
+    mee.setSatisfaction(V.satisfaction + 1);
 }

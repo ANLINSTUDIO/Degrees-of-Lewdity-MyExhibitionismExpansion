@@ -17,6 +17,8 @@
         "img/misc/icon/smell.png",
         "img/misc/icon/toilet-stall.png",
         "img/misc/icon/toilet-urinal.png",
+        "img/ui/calm.png",
+        "img/ui/courage.png",
         "img/ui/mee-tip.png",
         "img/ui/sym-exhibitionism.png"
     ],
@@ -42,10 +44,34 @@
                     "replace": "<<clothingCaptionText>><<clothingCaptionButton>>"
                 },
                 {
-                    "tip": "随处脱衣",
+                    "tip": "随处脱衣 - 更新文本",
                     "passage": "Clothing Shop v2 Widgets",
                     "findString": "<<clothingCaptionText>>",
                     "replace": "<<clothingCaptionText>><<clothingCaptionButton>>"
+                },
+                {
+                    "tip": "满足系统显示侧边栏",
+                    "passage": "StoryCaption",
+                    "findString": "<<hallucinogencaption>>",
+                    "replace": "<<hallucinogencaption>>\n\t\t\t<br>\n\t\t\t<<meecaptions>>"
+                },
+                {
+                    "tip": "勇气 - 淫乱判定文本",
+                    "passage": "Widgets Deviancy",
+                    "findString": "<<if !hasSexStat(\"deviancy\", $_n, false) and $drunk gte 1>>",
+                    "replaceFile": "twee/replacer/courage_deviancyN.twee"
+                },
+                {
+                    "tip": "勇气 - 暴露判定文本",
+                    "passage": "Widgets Exhibitionism",
+                    "findString": "<<if !hasSexStat(\"exhibitionism\", $_n, false) and $drunk gte 1>>",
+                    "replaceFile": "twee/replacer/courage_exhibitionismN.twee"
+                },
+                {
+                    "tip": "勇气 - 异种判定文本",
+                    "passage": "Widgets Promiscuity",
+                    "findString": "<<if !hasSexStat(\"promiscuity\", $_n, false) and $drunk gte 1>>",
+                    "replaceFile": "twee/replacer/courage_promiscuityN.twee"
                 },
                 {
                     "tip": "购物中心厕所",
@@ -62,6 +88,51 @@
                     "all": true
                 }
             ]
+        },
+        {
+            "modName": "ReplacePatcher",
+            "addonName": "ReplacePatcherAddon",
+            "modVersion": "1.2.0",
+            "params": {
+                "js": [
+                    {
+                        "tip": "勇气 - 判定修改",
+                        "fileName": "ingame.js",
+                        "from": "if (modifiers) {",
+                        "to": "if (modifiers) {\n\t\tstatValue += window.mee?.courageStatModifier();\n"
+                    },
+                    {
+                        "tip": "镇静 - 疼痛修改",
+                        "fileName": "stat-changes.js",
+                        "from": "pain *= 1 - V.sciencetrait / 10;",
+                        "to": "pain *= 1 - V.sciencetrait / 10;\n\t\t\t\tpain *= window.mee?.calmStatModifier();"
+                    },
+                    {
+                        "tip": "镇静 - 性奋修改",
+                        "fileName": "stat-changes.js",
+                        "from": "if (V.drugged > 0) {",
+                        "to": "mod *= window.mee?.calmStatModifier();\n\t\t\tif (V.drugged > 0) {"
+                    },
+                    {
+                        "tip": "镇静 - 压力修改",
+                        "fileName": "stat-changes.js",
+                        "from": "V.stress += amount * stressMod;",
+                        "to": "V.stress += amount * stressMod * (window.mee?.calmStatModifier()??1);"
+                    },
+                    {
+                        "tip": "欲望 - 性奋修改 （高欲望时性奋更容易提升，低欲望性欲则不容易提升【贤者时间？】）",
+                        "fileName": "stat-changes.js",
+                        "from": "if (V.drugged > 0) {",
+                        "to": "mod *= (V.desire??500) / 500;\n\t\t\tif (V.drugged > 0) {"
+                    },
+                    {
+                        "tip": "欲望 - 性奋影响",
+                        "fileName": "stat-changes.js",
+                        "from": "V.arousal += ",
+                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.01)};\n\t\t\tV.arousal += "
+                    }
+                ]
+            }
         },
         {
             "modName": "BeautySelectorAddon",
