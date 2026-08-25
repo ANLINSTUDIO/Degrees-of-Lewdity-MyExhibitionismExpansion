@@ -1,0 +1,17 @@
+    <<if $daily.commercialRooftopsSexEvent isnot undefined>>
+        <!--
+            both: 两人正在做爱
+            m_only: 只有女人在自慰
+            m_late: 只有女人在自慰，和她做完一次后男人会来再做一次
+            f_only: 只有男人在自慰
+            f_late: 只有男人在自慰，和他做完一次后女人会来再做一次
+        -->
+        <<switch $daily.commercialRooftopsSexEvent>>
+            <<case "finished">> 别管电梯井房后面的声音了，你有自己的事情要做。
+            <<case "both">> <<icon "mark.gif">> <<link [[你听到电梯井房后面传来交合之声|Commercial rooftops Sex]]>><</link>>
+            <<case "m_only" "m_late">> <<icon "mark.gif">> <<link [[你听到电梯井房后面传来女生的喘息声|Commercial rooftops Sex]]>><</link>>
+            <<case "f_only" "f_late">> <<icon "mark.gif">> <<link [[你听到电梯井房后面传来男生的喘息声|Commercial rooftops Sex]]>><</link>>
+        <</switch>>
+        <br><br>
+    <</if>>
+	<<if $exposed gte 1>>

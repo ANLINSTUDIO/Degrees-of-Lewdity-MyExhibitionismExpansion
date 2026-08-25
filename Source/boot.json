@@ -1,7 +1,7 @@
 {
     "name": "露出拓展-请别露出惊讶的表情好吗",
     "nickName": "请别露出惊讶的表情好吗 - 露出拓展",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "styleFileList": [
         "style/mee_css.css"
     ],
@@ -17,8 +17,6 @@
         "img/misc/icon/smell.png",
         "img/misc/icon/toilet-stall.png",
         "img/misc/icon/toilet-urinal.png",
-        "img/ui/calm.png",
-        "img/ui/courage.png",
         "img/ui/mee-tip.png",
         "img/ui/sym-exhibitionism.png"
     ],
@@ -77,7 +75,7 @@
                     "tip": "购物中心厕所",
                     "passage": "Shopping Centre",
                     "findString": "\t\t\t<br>\n\t\t\t<<stairsicon \"up\">><<link [[",
-                    "replaceFile": "twee/replacer/购物中心厕所.twee",
+                    "replaceFile": "twee/replacer/places/购物中心厕所.twee",
                     "all": true
                 },
                 {
@@ -86,6 +84,12 @@
                     "findString": "|Shopping Centre Restroom]]",
                     "replace": "|Shopping Centre Escape Toilets]]",
                     "all": true
+                },
+                {
+                    "tip": "【好奇任务】购物中心楼顶做爱事件",
+                    "passage": "Commercial rooftops",
+                    "findString": "\t<<if $exposed gte 1>>",
+                    "replaceFile": "twee/replacer/tasks/【好奇任务】购物中心楼顶做爱事件.twee"
                 }
             ]
         },
@@ -129,7 +133,13 @@
                         "tip": "欲望 - 性奋影响",
                         "fileName": "stat-changes.js",
                         "from": "V.arousal += ",
-                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.01)};\n\t\t\tV.arousal += "
+                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.06)};\n\t\t\tV.arousal += "
+                    },
+                    {
+                        "tip": "欲望 - 醉酒影响",
+                        "fileName": "stat-changes.js",
+                        "from": "V.drunk = Math.clamp",
+                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.7)};\n\t\t\tV.drunk = Math.clamp"
                     }
                 ]
             }

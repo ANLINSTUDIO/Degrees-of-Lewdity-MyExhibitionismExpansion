@@ -11,7 +11,6 @@
 	<<if $wardrobesground and Object.keys($wardrobesground).length > 0>>
 		<<for _wardrobesground_k range Object.keys($wardrobesground)>>
 			<<set _wardrobesground to mee.getGroundClothes(_wardrobesground_k)>>
-			<<run console.log(_wardrobesground)>>
 			<<if _wardrobesground>>
 				<div class="settingsToggleItem">
 					<div class="clothing-takeback-title">

@@ -1,7 +1,7 @@
 window.mee = {};
 mee.展开附近衣服延迟 = 100;
 mee.额外禁止放衣区域 = [
-    "Settings", "Attitudes",
+    "Settings", "Attitudes", "Simple Mirror",
     "Wardrobe", "Changing Room", "Bed",
     "Clothing Shop", "Forest Shop", "School Library Shop", "Adult Shop Store",
     "PillCollection", "Sextoys Inventory", "Mirror", "Containers", "Bath"
@@ -111,7 +111,7 @@ mee.setClothes = function(slot, clothes){
         <<exposure>>
         <<run updateMoment()>>
     `);
-    Dynamicest?.LoadStats();
+    window.Dynamicest?.LoadStats();
 };
 mee.removeClothes = function(slot){
     if (mee.isSafeAreaForClothes()) {
@@ -288,8 +288,10 @@ mee.courage = function() {
     // 欲望修正
     // 高欲望时 勇气↑、镇静↓ ，低欲望时反之
     mod += (V.desire - 500) / 500;
+    // 醉酒修正
+    mod += (V.drunk / 1000) * 2;
 
-    return Math.round(  Math.max(0, Math.min(1000, courage * mod))  *100)/100;
+    return Math.round(  Math.clamp(courage * Math.max(mod, 0), 0, 1000)  *100)/100;
 }
 mee.couragelevel = function() {
     let courage = mee.courage();
@@ -316,8 +318,10 @@ mee.calm = function() {
     // 欲望修正
     // 高欲望时 勇气↑、镇静↓ ，低欲望时反之
     mod -= (V.desire - 500) / 500;
+    // 醉酒修正
+    mod -= (V.drunk / 1000) * 1;
 
-    return Math.round(  Math.max(0, Math.min(1000, calm * mod))  *100)/100;
+    return Math.round(  Math.clamp(calm * Math.max(mod, 0), 0, 1000)  *100)/100;
 }
 mee.calmlevel = function() {
     let calm = mee.calm();
@@ -337,13 +341,13 @@ mee.calmStatModifier = function() {
     return 1.0 / (mee.calmlevel()+1);
 }
 mee.setDesire = function(value) {
-    V.desire = Math.round(  Math.max(1, Math.min(1000, value))  *100)/100;
+    V.desire = Math.round(  Math.clamp(value, 1, 1000)  *100)/100;
 }
 mee.addDesire = function(value) {
     mee.setDesire((V.desire??500) + value)
 }
 mee.setSatisfaction = function(value) {
-    V.satisfaction = Math.round(  Math.max(0, Math.min(1000, value))  *100)/100;
+    V.satisfaction = Math.round(  Math.clamp(value, 0, 1000)  *100)/100;
 }
 mee.addSatisfaction = function(value) {
     mee.setSatisfaction((V.satisfaction??100) + value)
@@ -384,4 +388,19 @@ mee.dayPassed = function() {
 mee.orgasm = function() {
     mee.setDesire(V.desire / 2);
     mee.setSatisfaction(V.satisfaction + 1);
+}
+
+// 排泄系统
+mee.getexcretes = function() {
+    if (V.daily.excretes) {
+        return V.daily.excretes.includes(Time.dayState);
+    }
+    return false;
+}
+
+mee.excrete = function() {
+    if (!V.daily.excretes) {
+        V.daily.excretes = [];
+    }
+    V.daily.excretes.push(Time.dayState);
 }
