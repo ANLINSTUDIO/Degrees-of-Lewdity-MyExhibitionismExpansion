@@ -154,8 +154,22 @@
     100% { background-color: transparent; color: var(--red); }
 }
 
+
+.customOverlayContent:has(#titleCarriedclothes) {
+    padding-right: 0;
+}
+
 .customOverlay:has(#titleCarriedclothes) {
-    left: 0 !important;
+    left: 10px;
+}
+
+@media only screen and (max-width: 26em) {
+    .customOverlay:has(#titleCarriedclothes) {
+        height: 40%;
+        left: -17.6em !important;
+        top: auto;
+        bottom: 10px;
+    }
 }
 
 

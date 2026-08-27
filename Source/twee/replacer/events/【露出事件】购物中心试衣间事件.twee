@@ -1,0 +1,16 @@
+<div id="wardrobeExits"><<wardrobeExits>></div>
+<<if $daily.changingRoomExhibitionEvent isnot "finished">>
+    <<satisfyevent "听着只隔一片薄布的外面，人声络绎不绝，而经过此处的脚步声，却稀稀疏疏，你内心萌生出一个特别的想法。" "exhibition">><br>
+    <<if hasSexStat("exhibitionism", 6)>>
+        <<skinicon "strip">><<link [[大方裸体出去|Changing Room Exhibition]]>><<set $action to 4>><<set $phase to 0>><</link>>
+    <<elseif hasSexStat("exhibitionism", 5)>>
+    <<skinicon "strip">><<link [[把窗帘完全拉开|Changing Room Exhibition]]>><<set $action to 3>><<set $phase to 0>><</link>>
+    <<elseif hasSexStat("exhibitionism", 4)>>
+        <<skinicon "strip">><<link [[拉开半边窗帘|Changing Room Exhibition]]>><<set $action to 2>><<set $phase to 0>><</link>>
+    <<elseif hasSexStat("exhibitionism", 3)>>
+        <<skinicon "strip">><<link [[拉开窗帘一角|Changing Room Exhibition]]>><<set $action to 1>><<set $phase to 0>><</link>>
+    <<else>>
+        <<skinicon "strip">><<link [[在窗帘后自慰|Changing Room Exhibition]]>><<set $action to 0>><<set $phase to 0>><</link>>
+    <</if>>
+    <br><br>
+<</if>>

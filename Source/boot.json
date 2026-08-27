@@ -1,7 +1,7 @@
 {
     "name": "露出拓展-请别露出惊讶的表情好吗",
     "nickName": "请别露出惊讶的表情好吗 - 露出拓展",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "styleFileList": [
         "style/mee_css.css"
     ],
@@ -84,6 +84,12 @@
                     "findString": "|Shopping Centre Restroom]]",
                     "replace": "|Shopping Centre Escape Toilets]]",
                     "all": true
+                },
+                {
+                    "tip": "【露出事件】购物中心更衣室露出",
+                    "passage": "Changing Room",
+                    "findString": "<div id=\"wardrobeExits\"><<wardrobeExits>></div>",
+                    "replaceFile": "twee/replacer/events/【露出事件】购物中心试衣间事件.twee"
                 },
                 {
                     "tip": "【好奇任务】购物中心楼顶做爱事件",
