@@ -30,6 +30,59 @@
     <</if>>
 <</if>> <</widget>>
 
+<<widget "wearButton">>
+    <<set _worn_id to _args[0].id>>
+    <<set _worn_k to _args[0].type>>
+    <<set _worn to _args[0].clothes>>
+    <<set _worn_name to _args[0].clothes.cn_name_cap??_args[0].clothes.name>>
+    <<set _worn_outfit to _args[0].outfit?" outfit":"">>
+    <<set _worn_discarded to _args[0].discarded?" discarded":"">>
+    <<set _extratext to "">>
+    <<set _extratext += _args[0].outfit?" | <span class='gold'>套装</span>":"">>
+    <div @class="'clothing-caption-button'+_worn_outfit+_worn_discarded" @onclick=_args[1]>
+        <div class="clothing-caption-button-icon">
+            <<clothingicon _worn _worn_k>>
+        </div>
+        <div class="clothing-caption-button-overlay">
+            <<set _integritymax to setup.clothes[_worn_k].find((a)=>{return a.name===_args[0].clothes.name})?.integrity_max>>
+            <<if _integritymax and _integritymax gt 0>>
+                <<if _worn.integrity gt (_integritymax * 9 / 10)>>
+                    <<set _output to 0>>
+                <<elseif _worn.integrity gt (_integritymax * 5 / 10)>>
+                    <<set _output to "<span class='teal'>磨损</span>">>
+                <<elseif _worn.integrity gt (_integritymax * 2 / 10)>>
+                    <<set _output to "<span class='purple'>撕裂</span>">>
+                <<else>>
+                    <<set _output to "<span class='red'>破烂</span>">>
+                <</if>>
+                <<if _output isnot 0>>
+                    <<set _extratext += " | "+_output>>
+                    <div class="clothing-caption-button-overlay-container">
+                        <<print _output>>
+                    </div>
+                <</if>>
+            <</if>>
+            <<if _worn.wet>>
+                <<switch mee.getWetStage(_worn.wet)>>
+                    <<case 1>><<set _extratext += " | <span class='teal'>湿润</span>">>
+                    <<case 2>><<set _extratext += " | <span class='purple'>潮湿</span>">>
+                    <<case 3>><<set _extratext += " | <span class='red'>湿透</span>">>
+                <</switch>>
+                <div class="clothing-caption-button-overlay-container">
+                    <<for _i to 0; _i lt mee.getWetStage(_worn.wet); _i++>>
+                        <div class="clothing-caption-button-overlay-drop"></div>
+                    <</for>>
+                </div>
+            <</if>>
+        </div>
+        <<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
+        <div class="clothing-caption-button-title">
+            <div>_label</div>
+            <div>_worn_name<<print _extratext>></div>
+        </div>
+    </div>
+<</widget>>
+
 <<widget "clothingCaptionButton">> <<if window.mee>>
     <div id="clothing-caption-button-temp" style="display: none"><<wardrobeLinks>></div><<run setTimeout(()=>{$("#clothing-caption-button-temp").remove()})>>
     
@@ -38,21 +91,23 @@
     <<if _onclothes>>
         <div class="clothing-caption-button-container">
             <<clothingCaptionButtonContainerDisable>>
-            <<for _clothes_object range _onclothes>>
-                <<set _worn_id to _clothes_object.id>>
-                <<set _worn_k to _clothes_object.type>>
-                <<set _worn to _clothes_object.clothes>>
-                <<set _worn_outfit to _clothes_object.outfit?" outfit":"">>
-                <div @class="'clothing-caption-button'+_worn_outfit" @onclick="'mee.removeClothes(`'+_worn_k+'`)'">
-                    <<clothingicon _worn _worn_k>>
-                    <<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
-                    <div>_label</div>
+            <div class="clothing-caption-button" onclick="Wikifier.wikifyEval(`<<overlayReplace 'carriedclothes'>><<replace #customOverlayTitle>><<titleCarriedclothes>><</replace>><<replace #customOverlayContent>><<carriedclothes>><</replace>>`)">
+                <div class="clothing-caption-button-icon">
+                    ...
                 </div>
+                <div class="clothing-caption-button-title">
+                    <div>随身携带</div>
+                    <div>打开你随身携带的衣服</div>
+                </div>
+            </div>
+            <<for _clothes_object range _onclothes>>
+                <<set _onclick to 'mee.clothingCaptionButtonClick(false, "'+_clothes_object.type+'")'>>
+                <<wearButton _clothes_object _onclick>>
             <</for>>
         </div>
     <</if>>
 
-    <<set _nearbyClothes to mee.getNearbyClothes()>>
+    <<set _nearbyClothes to mee.getNearbyClothes(_args[0]??true)>>
 
     <<set _start to "">>
     <<if !_nearbyClothes and !mee.clothingCaptionButtonContainerNearby>>
@@ -77,15 +132,8 @@
             <<if _nearbyClothes>>
                 <<clothingCaptionButtonContainerDisable>>
                 <<for _clothes_object range _nearbyClothes>>
-                    <<set _worn_id to _clothes_object.id>>
-                    <<set _worn_k to _clothes_object.type>>
-                    <<set _worn to _clothes_object.clothes>>
-                    <<set _worn_outfit to _clothes_object.outfit?" outfit":"">>
-                    <div @class="'clothing-caption-button'+_worn_outfit" @onclick="'mee.getClothes(`'+_worn_id+'`)'">
-                        <<clothingicon _worn _worn_k>>
-                        <<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
-                        <div>_label</div>
-                    </div>
+                    <<set _onclick to 'mee.clothingCaptionButtonClick(true, "'+_clothes_object.id+'")'>>
+                    <<wearButton _clothes_object _onclick>>
                 <</for>>
             <<else>>
                 <div class="clothing-caption-button"/>
@@ -96,7 +144,10 @@
     <<if _clothesChanged>>
         <br>
         <<button [[继续|$passage]]>><</button>>
-        <small class="red">部分选项产生于更换衣服之前，点击更新选项和当前剧情（可选，正在事件时谨慎使用）</small>
+    <</if>>
+
+    <<if _clothesChanged or _tipChanged>>
+        <small id="clothing-caption-tip">部分选项产生于更换衣服之前，点击更新选项和当前剧情（可选，正在事件时谨慎使用）</small>
     <</if>>
 
     <<if !mee.isSafeAreaForClothes() and !mee.isInEvent() and !mee.isProhibitAreaForClothes()>>
@@ -107,6 +158,40 @@
     
     <<clothingCaptionButtonContainerDisableDo>>
 <</if>> <</widget>>
+
+<<widget "titleCarriedclothes">>
+    <<setupTabs>>
+    <div id="titleCarriedclothes"/>
+	<div id="overlayTabs" class="tab">
+		<<closeButtonMobile>>
+		<<button "随身携带">>
+			<<toggleTab>>
+			<<replace #customOverlayContent>><<carriedclothes>><</replace>>
+		<</button>>
+		<<colourCodes>>
+	</div>
+	<<closeButton>>
+<</widget>>
+
+<<widget "carriedclothes">>
+    <div id="clothing-takeback-button-temp" style="display: none"><<wardrobeLinks>></div><<run setTimeout(()=>{$("#clothing-takeback-button-temp").remove()})>>
+	<<set _carriedClothes to mee.getGroundClothes("Carried")>>
+    <<set _count to 0>>
+    <div class="settingsToggleItem">
+        <div class="clothing-takeback-button-container">
+            <<if _carriedClothes>>
+                <<for _clothes_object range _carriedClothes>>
+                    <<set _count++>>
+                    <<set _onclick to 'mee.getClothesFromCarried("'+_clothes_object.id+'")'>>
+                    <<wearButton _clothes_object _onclick>>
+                <</for>>
+            <</if>>
+            <<for _i to 0; _i lt mee.getCarrySpace()[0]-_count; _i++>>
+                <div class="clothing-caption-button"/>
+            <</for>>
+        </div>
+    </div>
+<</widget>>
 
 :: == 满足系统 ============================== [widget]
 <<widget "meecaptions">> <<if window.mee>>

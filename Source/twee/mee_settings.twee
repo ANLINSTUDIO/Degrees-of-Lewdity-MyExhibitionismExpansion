@@ -10,7 +10,7 @@
 	<div id="clothing-takeback-button-temp" style="display: none"><<wardrobeLinks>></div><<run setTimeout(()=>{$("#clothing-takeback-button-temp").remove()})>>
 	<<if $wardrobesground and Object.keys($wardrobesground).length > 0>>
 		<<for _wardrobesground_k range Object.keys($wardrobesground)>>
-			<<set _wardrobesground to mee.getGroundClothes(_wardrobesground_k)>>
+			<<set _wardrobesground to mee.getGroundClothes(_wardrobesground_k, true)>>
 			<<if _wardrobesground>>
 				<div class="settingsToggleItem">
 					<div class="clothing-takeback-title">
@@ -25,14 +25,8 @@
 					</div>
 					<div class="clothing-takeback-button-container">
 						<<for _clothes_object range _wardrobesground>>
-							<<set _worn_index to _clothes_object.index>>
-							<<set _worn_k to _clothes_object.type>>
-							<<set _worn to _clothes_object.clothes>>
-							<div class="clothing-caption-button" @onclick="'mee.takeBackClothes(`'+_wardrobesground_k+'`, `'+_worn_k+'`, `'+_worn_index+'`)'">
-								<<clothingicon _worn _worn_k>>
-								<<set _label to _wardrobeLinks.find(item => item.id === _worn_k)?.label ?? _worn_k>>
-								<div>_label</div>
-							</div>
+							<<set _onclick to 'mee.takeBackClothes("'+_wardrobesground_k+'", "'+_clothes_object.type+'", "'+_clothes_object.index+'")'>>
+                			<<wearButton _clothes_object _onclick>>
 						<</for>>
 					</div>
 				</div>

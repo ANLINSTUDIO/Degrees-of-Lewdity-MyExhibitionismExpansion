@@ -1,7 +1,7 @@
 {
     "name": "露出拓展-请别露出惊讶的表情好吗",
     "nickName": "请别露出惊讶的表情好吗 - 露出拓展",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "styleFileList": [
         "style/mee_css.css"
     ],
@@ -45,7 +45,7 @@
                     "tip": "随处脱衣 - 更新文本",
                     "passage": "Clothing Shop v2 Widgets",
                     "findString": "<<clothingCaptionText>>",
-                    "replace": "<<clothingCaptionText>><<clothingCaptionButton>>"
+                    "replace": "<<clothingCaptionText>><<clothingCaptionButton false>>"
                 },
                 {
                     "tip": "满足系统显示侧边栏",

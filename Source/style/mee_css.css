@@ -1,47 +1,127 @@
 /* ====================================== */
 /*                随处脱衣                */
 /* ====================================== */
+/* 衣物按钮容器。网格包裹衣物按钮，每个按钮50px，最多容纳五个按钮。因每个按钮之间需要间距，否则显示不出边框，所以限宽260px，留出间距空间 */
 .clothing-caption-button-container {
     display: grid;
     width: 260px;
     overflow: visible;
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
     margin-top: 10px;
-}
-.clothing-caption-button {
-    width: 50px;
-    height: 50px;
-    border: 1px solid var(--700);
-    background-color: var(--850);
-    cursor: pointer;
     opacity: 1;
     transition: opacity 0.3s ease;
 }
-.clothing-caption-button.outfit {
-    background: linear-gradient(to bottom right, #fff, #fff0 20%);
+/* 衣物按钮。 */
+.clothing-caption-button {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    border: 1px solid var(--700);
+    background-color: var(--850);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 }
+/* 衣物按钮：悬浮时高亮。 */
 .clothing-caption-button:hover {
     border: 1px solid var(--150);
     background-color: var(--750);
-    color: var(--gold);
 }
+/* 衣物按钮：按下时高亮。 */
 .clothing-caption-button:active {
     border: 1px solid var(--yellow);
     background-color: var(--700);
 }
+/* 衣物按钮中内容禁止选中。 */
 .clothing-caption-button > * {
     pointer-events: none;
     user-select: none
 }
-.clothing-caption-button > div {
+/* 衣物按钮：特殊背景：套装。左上角显示白色的三角形 */
+.clothing-caption-button.outfit {
+    background: linear-gradient(to bottom right, #fff, #fff0 20%);
+}
+/* 衣物按钮：特殊背景：遗弃。显示屎黄色的边框 */
+.clothing-caption-button.discarded {
+    box-shadow: inset 0px 0px 7px 0px #717300;
+}
+
+/* 衣物图标。最低限宽30px，避免没有图标导致文字上移。 */
+.clothing-caption-button-icon {
+    min-height: 30px;
+}
+/* 衣物图标叠加层。右移4px，因为原版游戏对其左移了4px，会导致显示错误 */
+.clothing-caption-button-icon > .spanIcon {
+    transform: translateX(4px);
+}
+/* 衣物标题容器。 */
+.clothing-caption-button-title {
     font-size: 7px;
     white-space: nowrap;
+    position: relative;
 }
+/* 衣物标题：详细信息。 */
+.clothing-caption-button>.clothing-caption-button-title>:last-child {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    font-weight: normal;
+    text-decoration: none;
+    padding: 5px;
+    box-shadow: 0 0 8px 2px var(--900);
+    background: var(--tooltip-background) repeat-x 0 0;
+    z-index: 1000;
+    line-height: 1.25em;
+    display: none;
+}
+/* 衣物标题：槽位标题：悬浮时隐藏。 */
+.clothing-caption-button:hover>.clothing-caption-button-title>:first-child {
+    display: none;
+}
+/* 衣物标题：详细信息：悬浮时显示。 */
+.clothing-caption-button:hover>.clothing-caption-button-title>:last-child {
+    display: block;
+}
+/* 衣物属性叠加层。这是一个绝对位置锚点，不占用空间。 */
+.clothing-caption-button-overlay {
+    position: absolute;
+    right: 0;
+}
+/* 衣物属性叠加层容器。 */
+.clothing-caption-button-overlay-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1px;
+    max-height: 5px;
+    padding: 2px;
+    gap: 2px;
+    font-size: 7px;
+    font-weight: lighter;
+    line-height: 1;
+}
+/* 衣物属性：湿度。水滴形状。 */
+.clothing-caption-button-overlay-drop {
+    width: 5px;
+    height: 5px;
+    box-shadow: inset 1px 2px 8px rgb(69 212 255 / 80%), 1px 1px 7px rgba(0, 0, 0, 0.3);
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent);
+    clip-path: path('M 2.5 0 C 3.0 0.6, 4.5 1.8, 4.5 3.0 C 4.5 4.2, 3.5 5.0, 2.5 5.0 C 1.5 5.0, 0.5 4.2, 0.5 3.0 C 0.5 1.8, 2.0 0.6, 2.5 0 Z');
+    transform: scale(1.6);
+    transform-origin: center;
+}
+
+/* 衣物按钮容器失效指示器。这是一个指示器，不占用空间。拥有此指示器作为子元素的衣物按钮容器将失效。 */
 .clothing-caption-button-container-disable {display: none;}
-.clothing-caption-button-container:has(.disabled) > .clothing-caption-button{
+/* 衣物按钮容器：失效。 */
+.clothing-caption-button-container:has(.disabled) {
     opacity: 0.5;
     pointer-events: none;
 }
+/* 衣物附近容器。附近的衣物按钮容器在展开和收起时具有显示动画。显示为网格，是因其能够不改变内部元素位置的同时进行展开。 */
 .clothing-caption-button-container-nearby {
     display: grid;
     grid-template-rows: 1fr;
@@ -49,15 +129,33 @@
     overflow: hidden;
     box-shadow: 0px 0px 0px 0px var(--750);
 }
+/* 衣物附近容器：开始标志。此标志会将容器收起。通过移除此标志实现展开。 */
 .clothing-caption-button-container-nearby.start {
     grid-template-rows: 0fr;
     box-shadow: 0px 5px 10px 0px var(--750);
 }
+/* 衣物附近容器内部元素。设置最低限高为0，若不设置将无法收起。 */
 .clothing-caption-button-container-nearby > div {
     min-height: 0;
 }
+/* 衣物修改继续按钮。 */
 #mee-add-safe-area-for-clothes-button {
     font-size: smaller;
+}
+/* 衣物修改继续按钮提示文本。 */
+#clothing-caption-tip {
+    color: var(--red);
+    border-radius: 5px;
+}
+/*  衣物修改继续按钮提示文本：高亮动画 */
+@keyframes highlight {
+    0% { background-color: transparent; color: var(--red);  }
+    5% { background-color: var(--red); color: white; }
+    100% { background-color: transparent; color: var(--red); }
+}
+
+.customOverlay:has(#titleCarriedclothes) {
+    left: 0 !important;
 }
 
 
