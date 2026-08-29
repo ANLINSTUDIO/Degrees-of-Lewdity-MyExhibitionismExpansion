@@ -1,7 +1,7 @@
 {
     "name": "露出拓展-请别露出惊讶的表情好吗",
     "nickName": "请别露出惊讶的表情好吗 - 露出拓展",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "styleFileList": [
         "style/mee_css.css"
     ],
@@ -72,6 +72,32 @@
                     "replaceFile": "twee/replacer/courage_promiscuityN.twee"
                 },
                 {
+                    "tip": "镇静 - 疼痛修改 - 战斗用",
+                    "passage": "Widgets",
+                    "findString": "<<set $pain += (_violence * _painMod",
+                    "replace": "<<set _painMod *= (window.mee?.calmStatModifier()??1)>>\n\t\t\t<<set $pain += (_violence * _painMod",
+                    "all": true
+                },
+                {
+                    "tip": "镇静 - 压力修改 - 战斗用",
+                    "passage": "Widgets",
+                    "findString": "<<set $stress += (_violence * _drunkMod * _stressMod",
+                    "replace": "<<set _stressMod *= (window.mee?.calmStatModifier()??1)>>\n\t\t\t<<set $stress += (_violence * _drunkMod * _stressMod",
+                    "all": true
+                },
+                {
+                    "tip": "移动stats",
+                    "passage": "mobileStats",
+                    "findString": "<</widget>>\n\n<<widget \"mobileStatsTime\">>",
+                    "replaceFile": "twee/replacer/mobilestat.twee"
+                },
+                {
+                    "tip": "孤儿院厕所",
+                    "passage": "Bathroom",
+                    "findString": "<<personalUpkeep>>",
+                    "replaceFile": "twee/replacer/places/孤儿院厕所.twee"
+                },
+                {
                     "tip": "购物中心厕所",
                     "passage": "Shopping Centre",
                     "findString": "\t\t\t<br>\n\t\t\t<<stairsicon \"up\">><<link [[",
@@ -112,19 +138,19 @@
                         "to": "if (modifiers) {\n\t\tstatValue += window.mee?.courageStatModifier();\n"
                     },
                     {
-                        "tip": "镇静 - 疼痛修改",
+                        "tip": "镇静 - 疼痛修改 - 宏用",
                         "fileName": "stat-changes.js",
                         "from": "pain *= 1 - V.sciencetrait / 10;",
                         "to": "pain *= 1 - V.sciencetrait / 10;\n\t\t\t\tpain *= window.mee?.calmStatModifier();"
                     },
                     {
-                        "tip": "镇静 - 性奋修改",
+                        "tip": "镇静 - 性奋修改 - 通用",
                         "fileName": "stat-changes.js",
                         "from": "if (V.drugged > 0) {",
                         "to": "mod *= window.mee?.calmStatModifier();\n\t\t\tif (V.drugged > 0) {"
                     },
                     {
-                        "tip": "镇静 - 压力修改",
+                        "tip": "镇静 - 压力修改 - 宏用",
                         "fileName": "stat-changes.js",
                         "from": "V.stress += amount * stressMod;",
                         "to": "V.stress += amount * stressMod * (window.mee?.calmStatModifier()??1);"
@@ -138,14 +164,18 @@
                     {
                         "tip": "欲望 - 性奋影响",
                         "fileName": "stat-changes.js",
-                        "from": "V.arousal += ",
-                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.06)};\n\t\t\tV.arousal += "
+                        "from": "V.arousal += amount * mod",
+                        "to": "if (amount * mod > 0) window.mee?.addDesire(amount * mod * 0.06);\n\t\t\tV.arousal += amount * mod"
                     },
                     {
                         "tip": "欲望 - 醉酒影响",
+                        "0.5.10.12": "[\t\tV.drunk] = Math.clamp(V.drunk + amount * mod, 0, 1000);",
+                        "0.5.11.9-1": "[\t\tV.drunk] = Math.clamp(V.drunk, 0, 1000); （此处，没有amount，检测amount无法通过）",
+                        "0.5.11.9-2": "[\t\tV.drunk] += amount * mod",
                         "fileName": "stat-changes.js",
-                        "from": "V.drunk = Math.clamp",
-                        "to": "if (amount * mod > 0 ) {window.mee?.addDesire(amount * mod * 0.7)};\n\t\t\tV.drunk = Math.clamp"
+                        "from": "\t\tV.drunk",
+                        "to": "if (typeof amount !== 'undefined' && amount > 0) window.mee?.addDesire(amount * mod * 0.7);\n\t\tV.drunk",
+                        "all": true
                     }
                 ]
             }

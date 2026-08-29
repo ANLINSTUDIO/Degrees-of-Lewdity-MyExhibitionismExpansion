@@ -1,0 +1,48 @@
+	<br><br>
+	<<set _courage to mee.courage()>>
+	<<if Number.isFinite(_courage)>>
+		<<set _couragelevel to mee.couragelevel()>>
+		<<switch _couragelevel>>
+			<<case 4>>
+				<<set _mobileColor to "green">>
+			<<case 3>>
+				<<set _mobileColor to "teal">>
+			<<case 2>>
+				<<set _mobileColor to "lblue">>
+			<<case 1>>
+				<<set _mobileColor to "purple">>
+			<<case 0>>
+				<<set _mobileColor to "pink">>
+		<</switch>>
+		<div @class="'stat ' + _mobileColor">
+			<mouse class="tooltip-centertop">勇<span>勇气: <<print _courage.toFixed(2)>></span></mouse>
+		</div>
+	<</if>>
+	<<set _calm to mee.calm()>>
+	<<if Number.isFinite(_calm)>>
+		<<set _calmlevel to mee.calmlevel()>>
+		<<switch _calmlevel>>
+			<<case 4>>
+				<<set _mobileColor to "green">>
+			<<case 3>>
+				<<set _mobileColor to "teal">>
+			<<case 2>>
+				<<set _mobileColor to "lblue">>
+			<<case 1>>
+				<<set _mobileColor to "purple">>
+			<<case 0>>
+				<<set _mobileColor to "pink">>
+		<</switch>>
+		<div @class="'stat ' + _mobileColor">
+			<mouse class="tooltip-centertop">静<span>镇静: <<print _calm.toFixed(2)>></span></mouse>
+		</div>
+	<</if>>
+	<<if Number.isFinite($desire)>>
+		<<mobileStatsColorSet `Math.clamp($desire, 0, 1000)` 1000>>
+		<div @class="'stat ' + _mobileColor">
+			<mouse class="tooltip-centertop">求<span>欲望: <<print $desire.toFixed(2)>></span></mouse>
+		</div>
+	<</if>>
+<</widget>>
+
+<<widget "mobileStatsTime">>

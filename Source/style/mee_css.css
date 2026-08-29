@@ -163,7 +163,7 @@
     left: 10px;
 }
 
-@media only screen and (max-width: 26em) {
+@media only screen and (max-width: 27em) {
     .customOverlay:has(#titleCarriedclothes) {
         height: 40%;
         left: -17.6em !important;

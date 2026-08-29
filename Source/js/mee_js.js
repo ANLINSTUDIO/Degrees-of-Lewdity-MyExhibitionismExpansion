@@ -29,7 +29,13 @@ mee.startup = function() {
     V.wardrobesground = V.wardrobesground || {};
 
     V.desire = V.desire ?? 500;
-    V.satisfaction = V.satisfaction ?? 100;
+    V.satisfaction = V.satisfaction ?? 300;
+    if (V.satisfactionUpdate_patch === undefined && V.satisfaction < 300) {
+        if (window.confirm("检测到模组属性【满足感】低于默认值300，可能在v1.0.4版本之前加入了此模组，是否需要将满足感进行上调？")) {
+            V.satisfaction += 200;
+        }
+    }
+    V.satisfactionUpdate_patch = true;
 
     V.taskstat = V.taskstat ?? 0;
     V.mee_masturbationstatflag = V.mee_masturbationstatflag ?? V.masturbationstat;
@@ -82,7 +88,7 @@ mee.initwardrobesground = function(place) {
 mee.of$minutePassed = function(minutes) {
     // == 满足系统 ==============================
         // 不使用 mee.startup(); 避免处理太多
-        V.desire = V.desire ?? 0;
+        V.desire = V.desire ?? 500;
         let _desiremod = 0;
 
         // 基础减少
@@ -157,7 +163,7 @@ mee.of$dayPassed = function() {
 };
 // 玩家高潮
 mee.om$orgasm = function() {
-    mee.setDesire(V.desire / 2);
+    mee.setDesire(V.desire * Math.clamp(1-(0.3+V.orgasmcurrent*0.2), 0, 1));  // 随着高潮次数增加，欲望每次高潮下降得更多
     mee.setSatisfaction(V.satisfaction + 1);
 };
 
@@ -167,9 +173,9 @@ mee.om$orgasm = function() {
 mee.onFunction = function(originalFn, afterFn) {
     return new Proxy(originalFn, {
         apply: function(target, thisArg, argumentsList) {
-            const result = target.apply(thisArg, argumentsList);
+            // const result = target.apply(thisArg, argumentsList);
             afterFn(...argumentsList);
-            return result;
+            return target.apply(thisArg, argumentsList);
         }
     });
 };
@@ -342,6 +348,7 @@ mee.setClothes = function(slot, clothes, place=null) {
     V.wardrobes.ground = mee.initwardrobesground(place);
     let wardrobe_location = V.wardrobe_location;
     V.wardrobe_location = "ground";
+    V.wardrobeOption = "wear";
     V["wear_"+slot] = clothes;
 
     mee.saveWet();
@@ -425,56 +432,32 @@ mee.getGroundClothes = function(place, exclude_discarded=false) {
 mee.getNearbyClothes = function(random_refresh=true) {
     if (mee.isSafeAreaForClothes()) {
         if (random_refresh && !['Bedroom'].includes(V.passage)) {
-            if (Math.random() <= mee.随机刷衣概率百分之 / 100) {
-                const keys = [
-                    'head', 'face', 'neck',
-                    'upper', 'under_upper', 
-                    'hands', 'handheld', 
-                    'lower', 'under_lower',
-                    'legs', 'feet'
-                ];
-
-                // 1. 计算所有 slot 的有效物品总数（跳过索引 0）
-                let total = 0;
-                for (let slot of keys) {
-                    const clothes = setup.clothes[slot];
-                    if (clothes && clothes.length > 1) {
-                        total += clothes.length - 1;
-                    }
+            if (random(100) <= mee.随机刷衣概率百分之) {
+                if (!mee.clothes_discarded) {
+                    mee.clothes_discarded = setup.clothes.all.filter((clothes) => 
+                        clothes.cost > 0 &&
+                        [
+                            'head', 'face', 'neck',
+                            'upper', 'under_upper', 
+                            'hands', 'handheld', 
+                            'lower', 'under_lower',
+                            'legs', 'feet'
+                        ].includes(clothes.slot) &&
+                        !clothes.type.includes("strap-on")
+                    )
                 }
-
-                // 2. 随机选择一个偏移量
-                let rand = Math.floor(Math.random() * total);
-
-                // 3. 根据偏移量定位到具体的 slot 和 索引
-                let selectedSlot = null;
-                let selectedIndex = -1;
-                for (let slot of keys) {
-                    const clothes = setup.clothes[slot];
-                    if (!clothes || clothes.length <= 1) continue;
-                    const count = clothes.length - 1; // 有效物品数量
-                    if (rand < count) {
-                        selectedSlot = slot;
-                        selectedIndex = rand + 1; // 索引 0 为占位，有效索引从 1 开始
-                        break;
-                    } else {
-                        rand -= count;
-                    }
-                }
-
-                // 4. 获取选中物品并设置属性
-                const random_clothes_object = setup.clothes[selectedSlot][selectedIndex];
-                if (random_clothes_object && random_clothes_object.cost > 0 && !random_clothes_object.type.includes("strap-on")) {
+                const random_clothes_object = mee.clothes_discarded[random(mee.clothes_discarded.length-1)];
+                if (random_clothes_object) {
                     const clothes_object = clone(random_clothes_object);
                     // 可磨损物品
                     if (["upper", "under_upper", "lower", "under_lower"].includes(clothes_object.slot) || (clothes_object.slot === "face" && clothes_object.type.includesAny("face_covering", "gag", "mask"))) {
-                        clothes_object.integrity = 1 + Math.floor(Math.random() * 29);
+                        clothes_object.integrity = 1 + random(29);
                     }
                     // 可打湿物品 户外雨天淋湿处理
                     if (["upper", "under_upper", "lower", "under_lower"].includes(clothes_object.slot) && ["rain", "snow"].includes(Weather.precipitation) && V.outside === 1) {
                         clothes_object.wet = 200;
                     }
-                    console.log(`掉落临时随机衣服：${clothes_object.name}，完整度：${clothes_object.integrity}`);
+                    console.log(`MEE| 掉落临时随机衣服：${clothes_object.name}，完整度：${clothes_object.integrity}`);
                     mee.setGroundClothes(V.passage, clothes_object, null, null, null, true);
                 }
             }
@@ -495,7 +478,7 @@ mee.setGroundClothes = function(place, clothes, colour=null, accessory=null, pat
     let clothes_colour = 0;
     if (colour === null) {
         const colour_options = clothes.colour_options.filter((c) => c !== "custom");
-        clothes_colour = colour_options[Math.floor(Math.random() * (colour_options.length))] ?? 0;
+        clothes_colour = colour_options[random(colour_options.length-1)] ?? 0;
     } else {
         clothes_colour = colour;
     }
@@ -504,7 +487,7 @@ mee.setGroundClothes = function(place, clothes, colour=null, accessory=null, pat
     if (clothes.accessory === 1) {
         if (accessory === null) {
             const accessory_colour_options = clothes.accessory_colour_options.filter((c) => c !== "custom");
-            clothes_accessory_colour = accessory_colour_options[Math.floor(Math.random() * (accessory_colour_options.length))] ?? 0;
+            clothes_accessory_colour = accessory_colour_options[random(accessory_colour_options.length-1)] ?? 0;
         } else {
             clothes_accessory_colour = accessory;
         }
@@ -513,7 +496,7 @@ mee.setGroundClothes = function(place, clothes, colour=null, accessory=null, pat
     let clothes_pattern = 0;
     if (clothes.pattern_options) {
         if (pattern === null) {
-            clothes_pattern = clothes.pattern_options[Math.floor(Math.random() * (clothes.pattern_options.length))] ?? 0;
+            clothes_pattern = clothes.pattern_options[random(clothes.pattern_options.length-1)] ?? 0;
         } else {
             clothes_pattern = pattern;
         }
@@ -539,7 +522,7 @@ mee.setGroundClothes = function(place, clothes, colour=null, accessory=null, pat
                 if (clothes_object.pattern === 0) { clothes_object.pattern = clothes_pattern };
                 clothes_object.discarded = discarded;
                 clothesDataTrimmer(clothes_object);
-                console.log(`添加衣服套装补偿：${clothes_object.name}`);
+                console.log(`MEE| 添加衣服套装补偿：${clothes_object.name}`);
                 V.wardrobesground[place][slot_outfit].push(clothes_object);
             }
         })
@@ -553,7 +536,7 @@ mee.setGroundClothes = function(place, clothes, colour=null, accessory=null, pat
             if (clothes_object.pattern === 0) { clothes_object.pattern = clothes_pattern };
             clothes_object.discarded = discarded;
             clothesDataTrimmer(clothes_object);
-            console.log(`添加衣服套装补偿：${clothes_object.name}`);
+            console.log(`MEE| 添加衣服套装补偿：${clothes_object.name}`);
             V.wardrobesground[place][slot_outfit].push(clothes_object);
         }
     }
